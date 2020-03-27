@@ -4,14 +4,15 @@ from .producer import Producer
 from threading import Thread
 
 class Client(Thread):
-    def __init__(self, *args, **kargs ):
+    def __init__(self, list_topics ):
         self.__started__  = True
+        self.__list_topics__ = list_topics
         Thread.__init__(self)
 
     def __createConsumers__( self ):
         conargs, conkargs = self.decor.kafka_args
         consumers = []
-        for topic, consumer in self.decor.__list_topics__.items():
+        for topic, consumer in self.__list_topics__.items():
             args, kargs, f = consumer
             try:
                 job = ConsumerJob( self, conargs, conkargs, topic, args, kargs, f )

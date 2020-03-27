@@ -11,7 +11,7 @@ class KafkaDecorator:
         def inner( Cls ):
             class newCls(Client, Cls):
                 def __init__(obj, *iargs, **ikargs):
-                    Client.__init__( obj )
+                    Client.__init__( obj, self.__list_topics__ )
                     Cls.__init__( obj, *iargs, **ikargs )
                     obj.decor = self
                     self.cls = obj
