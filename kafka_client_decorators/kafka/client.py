@@ -66,7 +66,6 @@ class Client(Thread):
         
         while self.__started__  == True:
             try:
-                conargs, conkargs = self.decor.kafka_args
                 consumers = self.__createConsumers__( )
                 self.__startConsumers__( consumers )
                 self.__waitConsumersFinish__( consumers )
