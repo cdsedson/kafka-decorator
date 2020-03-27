@@ -14,7 +14,7 @@ class Client(Thread):
         for topic, consumer in self.decor.__list_topics__.items():
             args, kargs, f = consumer
             try:
-                job = ConsumerJob( self.decor.cls, conargs, conkargs, topic, args, kargs, f )
+                job = ConsumerJob( self, conargs, conkargs, topic, args, kargs, f )
                 consumers.append( job )
             except Exception as e:
                 print(e)
