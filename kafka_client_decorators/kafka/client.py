@@ -78,6 +78,7 @@ class Client(Thread):
 
     def producer(self, topic, *func_args, **func_kargs ):
         args, kargs, p = self.decor.__list_topics_send__[topic]
+        success = True
         try:
             if p is None:
                 conargs, conkargs = self.decor.kafka_args
@@ -86,7 +87,12 @@ class Client(Thread):
                 
             p.produce( *func_args, **func_kargs )
         except (Exception) as e:
-            raise e
+            print(e)
+            success = False
+        except:
+            print("Erro desconhecido")
+            success = False
+        return success
 
     def stop(self):
         self.__started__  = False
