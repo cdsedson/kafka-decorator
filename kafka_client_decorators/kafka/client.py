@@ -11,7 +11,7 @@ class Client(Thread):
         Thread.__init__(self)
 
     def __createConsumers__( self ):
-        conargs, conkargs = self.decor.kafka_args
+        conargs, conkargs = self.__connection_args__ 
         consumers = []
         for topic, consumer in self.__list_topics_receive__.items():
             args, kargs, f = consumer
@@ -82,7 +82,7 @@ class Client(Thread):
         success = True
         try:
             if p is None:
-                conargs, conkargs = self.decor.kafka_args
+                conargs, conkargs = self.__connection_args__ 
                 p = Producer( conargs, conkargs, topic, args, kargs )
                 self.decor.__list_topics_send__[topic] = (args, kargs, p)
                 
