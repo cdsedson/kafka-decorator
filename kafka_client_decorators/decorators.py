@@ -1,24 +1,9 @@
 from .kafka import Client
+from .kafka.connection_parameter import ConnectionParmeters
+from .kafka.consumer_parameter import ConsumerParmeters
+from .kafka.producer_parameter import ProducerParmeters
 from .kafka.logging_helper import getLogger
 
-class ConnectionParmeters:
-    def __init__( self, args, kargs ):
-        self.args = args
-        self.kargs = kargs
-
-class ConsumerParmeters:
-    def __init__( self, topic, args, kargs, function ):
-        self.args = args
-        self.kargs = kargs
-        self.function = function
-        self.topic = topic
-
-class ProducerParmeters:
-    def __init__( self, topic, args, kargs ):
-        self.args = args
-        self.kargs = kargs
-        self.topic = topic
-        
 class KafkaDecorator:
     def __init__(self):
         self.logger = getLogger(__name__)
