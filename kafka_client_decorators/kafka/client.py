@@ -11,13 +11,15 @@ class Client(Thread):
         self.__list_topics_send__ = { topic: (args,kargs, None) for topic, (args, kargs) in list_topics_send.items()}
         Thread.__init__(self)
 
+    def getConnection(self):
+        return self.__connection_args__
+        
     def __createConsumers__( self ):
         conn = self.__connection_args__ 
         consumers = []
-        for topic, consumer in self.__list_topics_receive__.items():
-            args, kargs, f = consumer
+        for cConf in self.__list_topics_receive__:
             try:
-                job = ConsumerJob( self, self.__connection_args__, topic, args, kargs, f )
+                job = ConsumerJob( self, cConf )
                 consumers.append( job )
             except Exception as e:
                 print(e)

@@ -3,32 +3,28 @@ from threading import Thread
 from pykafka import KafkaClient
 
 class ConsumerJob(Thread):
-    def __init__(self, cls, connection, topic, args, kargs, f):
-        self.__kargs__ = kargs
-        self.__args__ = args
-        self.__f__ = f
-        self.__cls__ = cls
-        self.__topic__ = topic
-        self.__started__ = None
-        self.__connection__ = connection
-        self.__consumer__ = None
+    def __init__(self, parent, conf  ):#topic, args, kargs, f):
+        self.__parent__ = parent
+        self.__conf__ = conf
         Thread.__init__(self)
 
-    def __receive__(self):
+    def __receive__(self, function ):
         for msg in self.__consumer__:
             if msg is not None:
-                self.__f__( self.__cls__, msg)
+                function( self.__parent__, msg)
             if self.__started__ == False:
                 break
     
     def run(self):
         self.__started__ = True
         try:
-            kafka_client = KafkaClient( *self.__connection__.args, **self.__connection__.kargs )
-            t = kafka_client.topics[self.__topic__]
-            self.__consumer__ = t.get_balanced_consumer( *self.__args__, **self.__kargs__ )
+            conn  = self.__parent__.getConnection()
+            kafka_client = KafkaClient( *conn.args, **conn.kargs )
+            t = kafka_client.topics[self.__conf__.topic]
+            self.__consumer__ = t.get_balanced_consumer( *self.__conf__.args, **self.__conf__.kargs )
+            f = self.__conf__.function
             while self.__started__ == True:
-                self.__receive__()
+                self.__receive__( f )
         except KafkaException as e:
             print(e)
         
