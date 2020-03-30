@@ -4,10 +4,11 @@ from .producer import Producer
 from threading import Thread
 
 class Client(Thread):
-    def __init__(self, list_topics_receive, connection_args ):
+    def __init__(self, connection_args, list_topics_receive, list_topics_send ):
         self.__started__  = True
         self.__list_topics_receive__ = list_topics_receive
         self.__connection_args__ = connection_args 
+        self.__list_topics_send__ = { topic: (args,kargs, None) for topic, (args, kargs) in list_topics_send.items()}
         Thread.__init__(self)
 
     def __createConsumers__( self ):
@@ -43,7 +44,7 @@ class Client(Thread):
         init = False
         for t in consumers:
             if t.is_alive() is True: 
-                t.join(0.1)
+                t.join(0.01)
             if t.is_alive() is True:
                 init = True
             else:
@@ -59,7 +60,7 @@ class Client(Thread):
         init = True
         while self.__started__  is True:
             time.sleep(0.01)
-        for p in self.decor.__list_topics_send__.values():
+        for p in self.__list_topics_send__.values():
             if p[2] is not None:
                 p[2].stop()
                           
@@ -78,13 +79,13 @@ class Client(Thread):
                 print("Erro desconhecido")
 
     def producer(self, topic, *func_args, **func_kargs ):
-        args, kargs, p = self.decor.__list_topics_send__[topic]
+        args, kargs, p = self.__list_topics_send__[topic]
         success = True
         try:
             if p is None:
                 conargs, conkargs = self.__connection_args__ 
                 p = Producer( conargs, conkargs, topic, args, kargs )
-                self.decor.__list_topics_send__[topic] = (args, kargs, p)
+                self.__list_topics_send__[topic] = (args, kargs, p)
                 
             p.produce( *func_args, **func_kargs )
         except (Exception) as e:
