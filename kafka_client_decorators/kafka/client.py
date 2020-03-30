@@ -63,8 +63,8 @@ class Client(Thread):
         while self.__started__  is True:
             time.sleep(0.01)
         for p in self.__list_topics_send__.values():
-            if p[2] is not None:
-                p[2].stop()
+            if p[1] is not None:
+                p[1].stop()
                           
     def run(self):
         self.__started__  = True
