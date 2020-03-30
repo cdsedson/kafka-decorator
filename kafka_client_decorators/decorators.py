@@ -1,5 +1,10 @@
 from .kafka import Client
 
+class Parameters:
+    def __init__( self, args, kargs ):
+        self.args = args
+        self.kargs = kargs
+
 class KafkaDecorator:
     def __init__(self):
         self.__topics_receive__ = {}
@@ -10,8 +15,8 @@ class KafkaDecorator:
         def inner( Cls ):
             class newCls(Client, Cls):
                 def __init__(obj, *iargs, **ikargs):
-                    kafka_args = ( args, kargs ) 
-                    Client.__init__( obj,  kafka_args, self.__topics_receive__, self.__topics_send__ )
+                    connection = Parameters( args, kargs ) 
+                    Client.__init__( obj, connection, self.__topics_receive__, self.__topics_send__ )
                     Cls.__init__( obj, *iargs, **ikargs )
                     self.cls = obj
             return newCls

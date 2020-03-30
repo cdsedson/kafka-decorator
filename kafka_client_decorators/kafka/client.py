@@ -12,12 +12,12 @@ class Client(Thread):
         Thread.__init__(self)
 
     def __createConsumers__( self ):
-        conargs, conkargs = self.__connection_args__ 
+        conn = self.__connection_args__ 
         consumers = []
         for topic, consumer in self.__list_topics_receive__.items():
             args, kargs, f = consumer
             try:
-                job = ConsumerJob( self, conargs, conkargs, topic, args, kargs, f )
+                job = ConsumerJob( self, self.__connection_args__, topic, args, kargs, f )
                 consumers.append( job )
             except Exception as e:
                 print(e)
@@ -82,9 +82,8 @@ class Client(Thread):
         args, kargs, p = self.__list_topics_send__[topic]
         success = True
         try:
-            if p is None:
-                conargs, conkargs = self.__connection_args__ 
-                p = Producer( conargs, conkargs, topic, args, kargs )
+            if p is None: 
+                p = Producer( self.__connection_args__, topic, args, kargs )
                 self.__list_topics_send__[topic] = (args, kargs, p)
                 
             p.produce( *func_args, **func_kargs )
