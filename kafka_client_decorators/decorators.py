@@ -1,4 +1,5 @@
 from .kafka import Client
+from .kafka.logging_helper import getLogger
 
 class ConnectionParmeters:
     def __init__( self, args, kargs ):
@@ -20,15 +21,20 @@ class ProducerParmeters:
         
 class KafkaDecorator:
     def __init__(self):
+        self.logger = getLogger(__name__)
+        self.logger.info( "Creating decorator " )
+        
         self.__topics_receive__ = []
         self.__topics_send__ = []
         self.__connection__ = None
         self.cls = None
 
     def host(self, *args, **kargs ):
+        self.logger.info( f"Adding host" )
         def inner( Cls ):
             class newCls(Client, Cls):
                 def __init__(obj, *iargs, **ikargs):
+                    self.logger.info( f"Creating class: {Cls}" )
                     Client.__init__( obj, self.__connection__, self.__topics_receive__, self.__topics_send__ )
                     Cls.__init__( obj, *iargs, **ikargs )
                     self.cls = obj
@@ -37,6 +43,7 @@ class KafkaDecorator:
         return inner
 
     def consumer(self, topic, *func_args, **func_kargs ):
+        self.logger.info( f"Adding consumer, topic: {topic}" )
         def kafka_client_consumer_inner(f):
             cConf = ConsumerParmeters( topic, func_args, func_kargs, f )
             self.__topics_receive__.append( cConf )
@@ -44,6 +51,7 @@ class KafkaDecorator:
         return kafka_client_consumer_inner
 
     def producer(self, topic, *args, **kargs ):
+        self.logger.info( f"Adding producer, topic: {topic}" )
         pConf = ProducerParmeters(topic, args, kargs)
         self.__topics_send__.append( pConf )
         def inner_producer( f ): 

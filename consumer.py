@@ -1,4 +1,9 @@
 from kafka_client_decorators import KafkaDecorator
+from kafka_client_decorators.kafka.logging_helper import setDebugLevel
+import logging
+#logging.basicConfig(level=logging.DEBUG)
+
+#setDebugLevel(logging.INFO)
 
 kc = KafkaDecorator(  )
 
@@ -14,13 +19,13 @@ class A:
     def get(self, msg):
         #print(self.a)
         #print (msg.value.decode('utf-8'))
-        print ( 'um: ',msg.offset )
+        #print ( 'um: ',msg.offset )
         self.send2( msg.value, "chave_2".encode('utf-8') )
 
     @kc.consumer('teste2', consumer_group='testgroup4', auto_commit_enable=True, managed=True, consumer_timeout_ms=1000)
     def get2(self, msg):
         #print(self.a)
-        print ( 'dois: ',msg.offset )
+        #print ( 'dois: ',msg.offset )
         self.send( msg.value )
 
     @kc.producer('teste')
