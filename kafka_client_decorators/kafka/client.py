@@ -8,7 +8,7 @@ class Client(Thread):
         self.__started__  = True
         self.__list_topics_receive__ = list_topics_receive
         self.__connection_args__ = connection_args 
-        self.__list_topics_send__ = { topic: (args,kargs, None) for topic, (args, kargs) in list_topics_send.items()}
+        self.__list_topics_send__ = { p.topic: (p, None) for p in list_topics_send }
         Thread.__init__(self)
 
     def getConnection(self):
@@ -81,12 +81,12 @@ class Client(Thread):
                 print("Erro desconhecido")
 
     def producer(self, topic, *func_args, **func_kargs ):
-        args, kargs, p = self.__list_topics_send__[topic]
+        pConf, p = self.__list_topics_send__[topic]
         success = True
         try:
             if p is None: 
-                p = Producer( self.__connection_args__, topic, args, kargs )
-                self.__list_topics_send__[topic] = (args, kargs, p)
+                p = Producer( self, pConf )
+                self.__list_topics_send__[topic] = (pConf, p)
                 
             p.produce( *func_args, **func_kargs )
         except (Exception) as e:

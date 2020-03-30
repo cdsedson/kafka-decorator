@@ -12,11 +12,16 @@ class ConsumerParmeters:
         self.function = function
         self.topic = topic
 
+class ProducerParmeters:
+    def __init__( self, topic, args, kargs ):
+        self.args = args
+        self.kargs = kargs
+        self.topic = topic
         
 class KafkaDecorator:
     def __init__(self):
         self.__topics_receive__ = []
-        self.__topics_send__ = {}
+        self.__topics_send__ = []
         self.__connection__ = None
         self.cls = None
 
@@ -39,7 +44,8 @@ class KafkaDecorator:
         return kafka_client_consumer_inner
 
     def producer(self, topic, *args, **kargs ):
-        self.__topics_send__[topic] = (args, kargs)
+        pConf = ProducerParmeters(topic, args, kargs)
+        self.__topics_send__.append( pConf )
         def inner_producer( f ): 
             def inner( obj, *func_args, **func_kargs ):
                 return self.cls.producer( topic, *func_args, **func_kargs )

@@ -3,7 +3,7 @@ from threading import Thread
 from pykafka import KafkaClient
 
 class ConsumerJob(Thread):
-    def __init__(self, parent, conf  ):#topic, args, kargs, f):
+    def __init__(self, parent, conf  ):
         self.__parent__ = parent
         self.__conf__ = conf
         Thread.__init__(self)
