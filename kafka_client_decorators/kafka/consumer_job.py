@@ -1,4 +1,5 @@
 from pykafka.exceptions import KafkaException
+from pykafka.exceptions import ConsumerStoppedException
 from threading import Thread
 from pykafka import KafkaClient
 from .consumer_parameter import ConsumerParmeters
@@ -25,9 +26,8 @@ class ConsumerJob(Thread):
                 break
         self.logger.debug( f"Stop receive, topic: {self.__conf__.topic}" )
     
-    def run(self):
+    def __listen__(self):
         self.logger.info( f"Start listen, topic: {self.__conf__.topic}" )
-        self.__started__ = True
         try:
             conn  = self.__parent__.getConnection()
             kafka_client = KafkaClient( *conn.args, **conn.kargs )
@@ -41,15 +41,32 @@ class ConsumerJob(Thread):
             f = self.__conf__.function
             while self.__started__ == True:
                 self.__receive__( f )
+        except ConsumerStoppedException as e:
+            self.logger.debug( f"Exception from topic: {self.__conf__.topic} : {type(e)} {e}" )
+            self.__started__ = False 
         except KafkaException as e:
-            self.__started__  = False
-            self.logger.error( f"Exception from topic: {self.__conf__.topic} : {type(e)} {e}" )
+            self.logger.exception( f"Exception from topic: {self.__conf__.topic} : {type(e)} {e}" )
+            
         self.logger.info( f"Stop listen, topic: {self.__conf__.topic}" )
         
+    def run(self):
+        self.__started__ = True
+        try:
+            self.__listen__()
+        except KafkaException as e:
+            self.logger.exception( f"Exception from topic, when handling another: {self.__conf__.topic} : {type(e)} {e}" )
+        except:
+            self.logger.exception( f"Exception from topic, when handling another: {self.__conf__.topic}" )
             
+        self.stop()
+          
     def stop(self):
         self.logger.info( f"Stopping consumer, topic: {self.__conf__.topic}" )
-        if self.__started__ != False:
+        if self.__started__ == True:
             self.__started__ = False
-            self.__consumer__.stop()
-            self.logger.debug( f"Stoped consumer, topic: {self.__conf__.topic}" )
+            try:
+                self.__consumer__.stop()
+                self.logger.debug( f"Stoped consumer, topic: {self.__conf__.topic}" )
+            except KafkaException as e:
+                self.logger.exception( f"Exception on stop listen topic: {self.__conf__.topic} : {type(e)} {e}" )
+            

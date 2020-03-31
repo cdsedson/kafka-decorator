@@ -32,6 +32,9 @@ class Producer:
     def stop(self):
         self.logger.info( f"Stopping Producer: {self.__conf__.topic}" )
         if self.__producer__ is not None:
-            self.__producer__.stop()
+            try:
+                self.__producer__.stop()
+            except KafkaException as e:
+                self.logger.exception( f"Exception on stop listen topic: {self.__conf__.topic} : {type(e)} {e}" )
             self.__producer__ = None
-            self.logger.debug( f"producer Stoped: {self.__conf__.topic}" )
+        self.logger.debug( f"producer Stoped: {self.__conf__.topic}" )
