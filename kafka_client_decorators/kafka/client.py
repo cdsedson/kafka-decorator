@@ -103,7 +103,7 @@ class Client(Thread):
         self.logger.info( f"App finished" )
 
     def producer(self, topic, *func_args, **func_kargs ):
-        self.logger.debug( f"Send message {func_args}, {func_kargs}" )
+        self.logger.debug( f"Send message to topic{ topic }" )
         pConf, p = self.__list_topics_send__[topic]
         success = True
         try:

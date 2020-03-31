@@ -12,7 +12,7 @@ class Producer:
         self.__producer__ = None
  
     def produce( self, *func_args, **func_kargs ):
-        self.logger.debug(f"Send message: {func_args} {func_kargs}" )
+        self.logger.debug(f"Send message: {self.__conf__.topic}" )
         try:
             if self.__producer__ is None:
                 self.logger.debug(f"Creating kafka producer: {self.__conf__.topic}" )
