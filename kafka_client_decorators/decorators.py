@@ -27,10 +27,18 @@ class KafkaDecorator:
         self.__connection__ = ConnectionParmeters( args, kargs )
         return inner
 
-    def consumer(self, topic, *func_args, **func_kargs ):
-        self.logger.info( f"Adding consumer, topic: {topic}" )
+    def balanced_consumer(self, topic, *func_args, **func_kargs ):
+        self.logger.info( f"Adding balanced consumer, topic: {topic}" )
         def kafka_client_consumer_inner(f):
-            cConf = ConsumerParmeters( topic, func_args, func_kargs, f )
+            cConf = ConsumerParmeters( ConsumerParmeters.BALANCED, topic, func_args, func_kargs, f )
+            self.__topics_receive__.append( cConf )
+            return f
+        return kafka_client_consumer_inner
+        
+    def simple_consumer(self, topic, *func_args, **func_kargs ):
+        self.logger.info( f"Adding simple consumer, topic: {topic}" )
+        def kafka_client_consumer_inner(f):
+            cConf = ConsumerParmeters( ConsumerParmeters.SIMPLE, topic, func_args, func_kargs, f )
             self.__topics_receive__.append( cConf )
             return f
         return kafka_client_consumer_inner

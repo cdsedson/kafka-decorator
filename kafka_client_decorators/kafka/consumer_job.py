@@ -1,6 +1,7 @@
 from pykafka.exceptions import KafkaException
 from threading import Thread
 from pykafka import KafkaClient
+from .consumer_parameter import ConsumerParmeters
 from .logging_helper import getLogger
 
 class ConsumerJob(Thread):
@@ -31,7 +32,12 @@ class ConsumerJob(Thread):
             conn  = self.__parent__.getConnection()
             kafka_client = KafkaClient( *conn.args, **conn.kargs )
             t = kafka_client.topics[self.__conf__.topic]
-            self.__consumer__ = t.get_balanced_consumer( *self.__conf__.args, **self.__conf__.kargs )
+            if self.__conf__.kind == ConsumerParmeters.BALANCED:
+                self.logger.info( f"Create balanced consumer to topic: {self.__conf__.topic}" )
+                self.__consumer__ = t.get_balanced_consumer( *self.__conf__.args, **self.__conf__.kargs )
+            else:
+                self.logger.info( f"Create simple consumer to topic: {self.__conf__.topic}" )
+                self.__consumer__ = t.get_simple_consumer( *self.__conf__.args, **self.__conf__.kargs )
             f = self.__conf__.function
             while self.__started__ == True:
                 self.__receive__( f )

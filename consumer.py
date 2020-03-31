@@ -15,17 +15,17 @@ class A:
         self.a = 'teste'
         pass
 
-    @kc.consumer('topicPositionsJSON', consumer_group='testgroup3', auto_commit_enable=True, managed=True, consumer_timeout_ms=1000)
+    @kc.balanced_consumer('topicPositionsJSON', consumer_group='testgroup3', auto_commit_enable=True, managed=True, consumer_timeout_ms=1000)
     def get(self, msg):
         #print(self.a)
         #print (msg.value.decode('utf-8'))
-        #print ( 'um: ',msg.offset )
+        print ( 'um: ',msg.offset )
         self.send2( msg.value, "chave_2".encode('utf-8') )
 
-    @kc.consumer('teste2', consumer_group='testgroup4', auto_commit_enable=True, managed=True, consumer_timeout_ms=1000)
+    @kc.simple_consumer('teste2', auto_commit_enable=True, consumer_timeout_ms=1000)
     def get2(self, msg):
         #print(self.a)
-        #print ( 'dois: ',msg.offset )
+        print ( 'dois: ',msg.offset )
         self.send( msg.value )
 
     @kc.producer('teste')
