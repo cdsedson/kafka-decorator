@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: <encoding name> -*-
+
 from kafka_client_decorators import KafkaDecorator
 from kafka_client_decorators.kafka.logging_helper import setDebugLevel
 import logging

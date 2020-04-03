@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: <encoding name> -*-
+
 class ConsumerParmeters:
     SIMPLE = 1
     BALANCED = 2

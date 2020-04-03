@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: <encoding name> -*-
+
 from .kafka import Client
 from .kafka.connection_parameter import ConnectionParmeters
 from .kafka.consumer_parameter import ConsumerParmeters

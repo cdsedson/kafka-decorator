@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: <encoding name> -*-
+
 from pykafka.exceptions import KafkaException
 from pykafka.exceptions import ConsumerStoppedException
 from threading import Thread
