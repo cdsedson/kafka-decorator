@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: <encoding name> -*-
+
 from pykafka.exceptions import KafkaException
 from pykafka import KafkaClient
 from .logging_helper import getLogger

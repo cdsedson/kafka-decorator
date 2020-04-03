@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: <encoding name> -*-
+
 from .consumer_job import ConsumerJob 
 from .producer import Producer
 from .logging_helper import getLogger
