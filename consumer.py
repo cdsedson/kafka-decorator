@@ -28,7 +28,7 @@ class A:
         #print(self.a)
         #print (msg.value.decode('utf-8'))
         print ( 'um: ',msg.offset )
-        self.send2( msg.value, "chave_2".encode('utf-8') )
+        self.send2( msg.value, partition_key="chave_2".encode('utf-8') )
 
     @kc.simple_consumer('teste2', auto_commit_enable=True, consumer_timeout_ms=1000)
     def get2(self, msg):

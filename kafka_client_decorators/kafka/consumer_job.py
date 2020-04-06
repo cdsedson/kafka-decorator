@@ -68,7 +68,8 @@ class ConsumerJob(Thread):
         if self.__started__ == True:
             self.__started__ = False
             try:
-                self.__consumer__.stop()
+                if self.__consumer__ is not None:
+                    self.__consumer__.stop()
                 self.logger.debug( f"Stoped consumer, topic: {self.__conf__.topic}" )
             except KafkaException as e:
                 self.logger.exception( f"Exception on stop listen topic: {self.__conf__.topic} : {type(e)} {e}" )

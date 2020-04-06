@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="kafka-decorator-cdsedson", # Replace with your own username
+    name="kafka_client_decorators-cdsedson", # Replace with your own username
     version="0.0.1",
     author="Edson Cardoso",
     author_email="edsonsn2@hotmail.com",

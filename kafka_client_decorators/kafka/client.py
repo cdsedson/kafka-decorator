@@ -51,7 +51,8 @@ class Client(Thread):
     def __stopConsumer__( self, consumers ):
         self.logger.info( f"Stopping consumers" )
         for st in consumers:
-            st.stop()
+            if st is not None:
+                st.stop()
             
     def __waitConsumer__( self, consumers ):
         if self.__started__  is False:
