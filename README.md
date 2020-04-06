@@ -28,8 +28,8 @@ import logging
 
 kc = KafkaDecorator(  )
 
-#@kc.host(zookeeper_hosts='10.142.0.10:2181' )
-@kc.host(hosts='10.142.0.10:9092' )
+#@kc.host(zookeeper_hosts='localhost:2181' )
+@kc.host(hosts='localhost:9092' )
 class A:
     def __init__(self, testA, cls):
         self.a = testA
