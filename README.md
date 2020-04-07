@@ -18,6 +18,8 @@ its parameters are the same of pykafka.topic.get_simple_consumer function
 its parameters are the same of pykafka.topic.get_producer function
 @KafkaDecorator.producer
 
+Install
+	pip install kafka-client-decorators
  
 How to use
 
