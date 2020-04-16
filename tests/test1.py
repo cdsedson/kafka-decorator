@@ -26,8 +26,10 @@ kc = KafkaDecorator(  )
 
 class helper_kafka:     
     def produce(self, *args, **kargs):
-        print( args, kargs)
-        self.m =  (args, kargs)
+        if args[0] == 'Except':
+            raise Exception("Error in send")
+        self.message =  args[0]
+        self.key = kargs['partition_key'] if 'partition_key' in kargs else None
     
     def stop(self):
         pass
@@ -47,16 +49,11 @@ class A:
 
 
 class Test1(unittest.TestCase):
-    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=helper_kafka() )
-    def teste_Send(self, Mockkafka ):
+    kh = helper_kafka()
         
-        #Mockkafka.getProducer = MagicMock(return_value=helper_kafka())
-        #attrs = {'topic': 3, 'other.side_effect': KeyError}
-        #Mockkafka.configure_mock(**attrs)
-        #print(Mockkafka)
-        #Mockkafka.return_value = helper_kafka
-        #Mockkafka.topic  = [helper_kafka()] 
-        #print(dir(Mockkafka))
+    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
+    def teste_send_key(self, Mockkafka ):
+        
         a = A()
         a.start()
 
@@ -64,8 +61,35 @@ class Test1(unittest.TestCase):
         a.stop()
         a.wait()
         #assert 
-        print( Mockkafka.call_args_list)
+        assert self.kh.message, keyself.kh == 'Hello'.encode('utf-8') 
+        assert self.kh.key == 'world'.encode('utf-8') 
+        
+    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
+    def teste_send(self, Mockkafka ):
+        
+        a = A()
+        a.start()
 
+        a.sendKey( 'Hello'.encode('utf-8') )
+        a.stop()
+        a.wait()
+        #assert 
+        assert self.kh.message, keyself.kh == 'Hello'.encode('utf-8') 
+        assert self.kh.key == None
+        
+    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
+    def teste_exception(self, Mockkafka ):
+        
+        a = A()
+        a.start()
+        
+        a.sendKey( 'Except'.encode('utf-8'), partition_key='Except'.encode('utf-8') )
+        a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
+        a.stop()
+        a.wait()
+        #assert 
+        assert self.kh.message, keyself.kh == 'Hello'.encode('utf-8') 
+        assert self.kh.key == None
 
 if __name__ == '__main__':
     unittest.main()

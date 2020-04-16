@@ -8,7 +8,6 @@ class Producer:
     def __init__(self, parent, conf):
         self.logger = getLogger(__name__)
         self.logger.info( f"Creating Producer for topic: {conf.topic}" )
-        
         self.__parent__ = parent
         self.__conf__ = conf
         self.__producer__ = None
@@ -22,7 +21,7 @@ class Producer:
                 self.__producer__ = ProducerFactory.getProducer( conn, self.__conf__, self.__conf__.topic)
             self.__producer__.produce( *func_args, **func_kargs )
             self.logger.debug(f"Mesage sent for topic: {self.__conf__.topic}" )
-        except (Exception) as e:
+        except Exception as e:
             self.logger.exception(f"Exception raised: {e}" )
             if self.__producer__ is not None:
                 self.__producer__.stop()
@@ -34,7 +33,7 @@ class Producer:
         if self.__producer__ is not None:
             try:
                 self.__producer__.stop()
-            except KafkaException as e:
+            except Exception as e:
                 self.logger.exception( f"Exception on stop listen topic: {self.__conf__.topic} : {type(e)} {e}" )
             self.__producer__ = None
         self.logger.debug( f"producer Stoped: {self.__conf__.topic}" )
