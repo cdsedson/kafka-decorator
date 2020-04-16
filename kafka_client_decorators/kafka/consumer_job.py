@@ -45,9 +45,7 @@ class ConsumerJob(Thread):
         except ConsumerStoppedException as e:
             self.logger.debug( f"Exception from topic: {self.__conf__.topic} : {type(e)} {e}" )
             self.__started__ = False 
-        except KafkaException as e:
-            self.logger.exception( f"Exception from topic: {self.__conf__.topic} : {type(e)} {e}" )
-            
+
         self.logger.info( f"Stop listen, topic: {self.__conf__.topic}" )
         
     def run(self):
@@ -58,8 +56,6 @@ class ConsumerJob(Thread):
             self.logger.exception( f"Exception from topic, when handling another: {self.__conf__.topic} : {type(e)} {e}" )
         except:
             self.logger.exception( f"Exception from topic, when handling another: {self.__conf__.topic}" )
-            
-        self.stop()
           
     def stop(self):
         self.logger.info( f"Stopping consumer, topic: {self.__conf__.topic}" )
@@ -69,6 +65,6 @@ class ConsumerJob(Thread):
                 if self.__consumer__ is not None:
                     self.__consumer__.stop()
                 self.logger.debug( f"Stoped consumer, topic: {self.__conf__.topic}" )
-            except KafkaException as e:
+            except Exception as e:
                 self.logger.exception( f"Exception on stop listen topic: {self.__conf__.topic} : {type(e)} {e}" )
             

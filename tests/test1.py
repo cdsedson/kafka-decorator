@@ -2,6 +2,8 @@ import unittest
 import mock
 import time
 from unittest.mock import MagicMock
+from pykafka.exceptions import KafkaException
+from pykafka.exceptions import ConsumerStoppedException
 
 try:
     print('trying installed module')
@@ -52,9 +54,23 @@ class helper_kafka:
             self.offset = offset
             self.value = value
             self.partition_key = partition_key
+        def get(self):
+            return self
+    class E:
+        def __init__( self, excepion ):
+            self.excp = excepion
+
+        def get(self):
+            raise self.excp
             
+    def cleanMessage( self  ):
+        self.read = []
+        
     def setMessage( self, offset, message, key  ):
         self.read.append( self.M(offset, message, key ) )
+        
+    def setException( self, excepion  ):
+        self.read.append( self.E( excepion ) )
     
     def __iter__(self):
         return self
@@ -63,7 +79,8 @@ class helper_kafka:
         time.sleep(0.1)
         if len(self.read) <= 0:
             raise StopIteration
-        return self.read.pop() if len(self.read) else None
+        message = self.read.pop(0)
+        return message.get()
           
 
 kc = KafkaDecorator(  )
@@ -88,6 +105,16 @@ class B:
         self.read = []
     
     @kc2.balanced_consumer('test1', consumer_group='testgroup3')
+    def get(self, msg):
+        self.read.append(msg)
+
+kc3 = KafkaDecorator(  )
+@kc3.host(hosts='localhost:9092' )
+class C:
+    def __init__(self):
+        self.read = []
+    
+    @kc3.simple_consumer('test1', consumer_group='testgroup3')
     def get(self, msg):
         self.read.append(msg)
 #from kafka_client_decorators.kafka import ProducerFactory
@@ -171,6 +198,7 @@ class Test1(unittest.TestCase):
         
     @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
     def test_receive(self, Mockkafka ):
+        self.kh.cleanMessage(  )
         self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
         
         b = B()
@@ -178,13 +206,134 @@ class Test1(unittest.TestCase):
         b.start()
         b.stop()
         b.wait()
-        print(b.read)
+
         assert b.read[0].offset == 1
         assert b.read[0].value == 'Hello'.encode('utf-8')
         assert b.read[0].partition_key == 'world'.encode('utf-8')
         
-        #assert self.kh.key == None
+    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_simple', return_value=kh )
+    def test_receive_simple(self, Mockkafka ):
+        self.kh.cleanMessage(  )
+        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+        
+        c = C()
+        
+        c.start()
+        c.stop()
+        c.wait()
+        
+        assert c.read[0].offset == 1
+        assert c.read[0].value == 'Hello'.encode('utf-8')
+        assert c.read[0].partition_key == 'world'.encode('utf-8')
+        
+    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
+    def test_receive_exception(self, Mockkafka ):
+        self.kh.cleanMessage(  )
+        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+        self.kh.setMessage( 2, 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
+        self.kh.setException( ConsumerStoppedException()  )
+        self.kh.setMessage( 3, 'Hello3'.encode('utf-8'), 'world3'.encode('utf-8') )
+        
+        b = B()
+        
+        b.start()
+        start = time.time()
+        while time.time() < (start + 30):
+            if len( b.read ) == 3:
+                break
+            time.sleep(0.01)
+        
+        timeout = time.time() > (start + 30)
+        
+        b.stop()
+        b.wait()
+        
+        assert not timeout
+        if timeout :
+            return
+        
+        assert b.read[0].offset == 1
+        assert b.read[0].value == 'Hello'.encode('utf-8')
+        assert b.read[0].partition_key == 'world'.encode('utf-8')
+        
+        assert b.read[1].offset == 2
+        assert b.read[1].value == 'Hello2'.encode('utf-8')
+        assert b.read[1].partition_key == 'world2'.encode('utf-8')
+        
+        assert b.read[2].offset == 3
+        assert b.read[2].value == 'Hello3'.encode('utf-8')
+        assert b.read[2].partition_key == 'world3'.encode('utf-8')
+        
+    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
+    def test_receive_exception(self, Mockkafka ):
+        self.kh.cleanMessage(  )
+        self.kh.setException( KafkaException())
+        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+        self.kh.setException( KafkaException())
+        self.kh.setMessage( 2, 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
+        self.kh.setException( KafkaException())
+        self.kh.setMessage( 3, 'Hello3'.encode('utf-8'), 'world3'.encode('utf-8') )
+        self.kh.setException( Exception())
+        
+        b = B()
+        
+        b.start()
+        start = time.time()
+        while time.time() < (start + 30):
+            if len( b.read ) == 3:
+                break
+            time.sleep(0.01)
+        
+        timeout = time.time() > (start + 30)
+        
+        b.stop()
+        b.wait()
+        
+        assert not timeout
+        if timeout :
+            return
+        
+        assert b.read[0].offset == 1
+        assert b.read[0].value == 'Hello'.encode('utf-8')
+        assert b.read[0].partition_key == 'world'.encode('utf-8')
+        
+        assert b.read[1].offset == 2
+        assert b.read[1].value == 'Hello2'.encode('utf-8')
+        assert b.read[1].partition_key == 'world2'.encode('utf-8')
+        
+        assert b.read[2].offset == 3
+        assert b.read[2].value == 'Hello3'.encode('utf-8')
+        assert b.read[2].partition_key == 'world3'.encode('utf-8')
 
+    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
+    def test_receive_stop_exception(self, Mockkafka ):
+        self.kh.stopException()
+        
+        self.kh.cleanMessage(  )
+        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+        
+        b = B()
+        
+        b.start()
+        b.stop()
+        b.wait()
+        
+        assert b.read[0].offset == 1
+        assert b.read[0].value == 'Hello'.encode('utf-8')
+        assert b.read[0].partition_key == 'world'.encode('utf-8')
+        
+        self.kh.cleanMessage(  )
+        self.kh.setMessage( 2, 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
+        
+        b = B()
+        
+        b.start()
+        b.stop()
+        b.wait()
+        
+        assert b.read[0].offset == 2
+        assert b.read[0].value == 'Hello2'.encode('utf-8')
+        assert b.read[0].partition_key == 'world2'.encode('utf-8')
 
 if __name__ == '__main__':
     unittest.main()
