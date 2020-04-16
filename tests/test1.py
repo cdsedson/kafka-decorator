@@ -1,5 +1,6 @@
 import unittest
 import mock
+import time
 from unittest.mock import MagicMock
 
 try:
@@ -22,19 +23,50 @@ import logging
 
 #setDebugLevel(logging.INFO)
 
-kc = KafkaDecorator(  )
 
-class helper_kafka:     
+
+class helper_kafka:
+
+    def __init__(self):
+        self.stop_execpt = False
+        self.read = []
+    
     def produce(self, *args, **kargs):
-        if args[0] == 'Except':
+        if args[0] == 'Except'.encode('utf-8'):
+            self.message  = None
+            self.key =  None
             raise Exception("Error in send")
         self.message =  args[0]
         self.key = kargs['partition_key'] if 'partition_key' in kargs else None
     
+    def stopException( self ):
+        self.stop_execpt = True 
+        
     def stop(self):
-        pass
+        if self.stop_execpt is True:
+            self.stop_execpt = False
+            raise Exception( "Stop error" )
+    
+    class M:
+        def __init__( self, offset, value, partition_key ):
+            self.offset = offset
+            self.value = value
+            self.partition_key = partition_key
+            
+    def setMessage( self, offset, message, key  ):
+        self.read.append( self.M(offset, message, key ) )
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        time.sleep(0.1)
+        if len(self.read) <= 0:
+            raise StopIteration
+        return self.read.pop() if len(self.read) else None
           
 
+kc = KafkaDecorator(  )
 #@kc.host(zookeeper_hosts='localhost:2181' )
 @kc.host(hosts='localhost:9092' )
 class A:
@@ -44,7 +76,20 @@ class A:
     @kc.producer('test1')
     def sendKey(self, msg, key ):
         pass
-
+        
+    @kc.producer('test1')
+    def send(self, msg ):
+        pass
+ 
+kc2 = KafkaDecorator(  )
+@kc2.host(hosts='localhost:9092' )
+class B:
+    def __init__(self):
+        self.read = []
+    
+    @kc2.balanced_consumer('test1', consumer_group='testgroup3')
+    def get(self, msg):
+        self.read.append(msg)
 #from kafka_client_decorators.kafka import ProducerFactory
 
 
@@ -52,7 +97,7 @@ class Test1(unittest.TestCase):
     kh = helper_kafka()
         
     @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
-    def teste_send_key(self, Mockkafka ):
+    def test_send_key(self, Mockkafka ):
         
         a = A()
         a.start()
@@ -60,12 +105,12 @@ class Test1(unittest.TestCase):
         a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
         a.stop()
         a.wait()
-        #assert 
-        assert self.kh.message, keyself.kh == 'Hello'.encode('utf-8') 
+
+        assert self.kh.message == 'Hello'.encode('utf-8') 
         assert self.kh.key == 'world'.encode('utf-8') 
         
     @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
-    def teste_send(self, Mockkafka ):
+    def test_send(self, Mockkafka ):
         
         a = A()
         a.start()
@@ -73,23 +118,73 @@ class Test1(unittest.TestCase):
         a.sendKey( 'Hello'.encode('utf-8') )
         a.stop()
         a.wait()
-        #assert 
-        assert self.kh.message, keyself.kh == 'Hello'.encode('utf-8') 
+ 
+        assert self.kh.message == 'Hello'.encode('utf-8') 
         assert self.kh.key == None
         
     @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
-    def teste_exception(self, Mockkafka ):
+    def test_exception(self, Mockkafka ):
         
         a = A()
         a.start()
         
         a.sendKey( 'Except'.encode('utf-8'), partition_key='Except'.encode('utf-8') )
+        assert self.kh.message is None
+        assert self.kh.key is None 
+        
         a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
         a.stop()
         a.wait()
-        #assert 
-        assert self.kh.message, keyself.kh == 'Hello'.encode('utf-8') 
-        assert self.kh.key == None
+
+        assert self.kh.message == 'Hello'.encode('utf-8') 
+        assert self.kh.key == 'world'.encode('utf-8') 
+        
+    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
+    def test_stop_exception(self, Mockkafka ):
+        
+        self.kh.stopException()
+        
+        a = A()
+        a.start()
+        
+        a.sendKey( 'Erro'.encode('utf-8'), partition_key='Erro'.encode('utf-8') )
+        assert self.kh.message == 'Erro'.encode('utf-8') 
+        assert self.kh.key == 'Erro'.encode('utf-8')
+        assert self.kh.stop_execpt is True
+        
+        a.stop()
+        a.wait()
+        
+        assert self.kh.stop_execpt is False
+        
+        a = A()
+        a.start()
+        
+        a.sendKey( 'Erro'.encode('utf-8'), partition_key='Erro'.encode('utf-8') )
+        assert self.kh.message == 'Erro'.encode('utf-8') 
+        assert self.kh.key == 'Erro'.encode('utf-8')
+        
+        a.stop()
+        a.wait()
+        
+        assert self.kh.stop_execpt is False
+        
+    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
+    def test_receive(self, Mockkafka ):
+        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+        
+        b = B()
+        
+        b.start()
+        b.stop()
+        b.wait()
+        print(b.read)
+        assert b.read[0].offset == 1
+        assert b.read[0].value == 'Hello'.encode('utf-8')
+        assert b.read[0].partition_key == 'world'.encode('utf-8')
+        
+        #assert self.kh.key == None
+
 
 if __name__ == '__main__':
     unittest.main()
