@@ -16,7 +16,8 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/cdsedson/kafka-decorator.git",
     packages=setuptools.find_packages(),
-    test_suite = 'nose.collector',
+    tests_require=['nose2', 'mock'],
+    test_suite = 'nose2.collector.collector',
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

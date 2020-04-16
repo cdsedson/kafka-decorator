@@ -1,18 +1,6 @@
 import unittest
-
-
-#class TestSum(unittest.TestCase):
-
-#    def test_sum(self):
-#        self.assertEqual(sum([1, 2, 3]), 6, "Should be 6")
-
-#    def test_sum_tuple(self):
-#        self.assertEqual(sum((1, 2, 2)), 6, "Should be 6")
-
-
-
-#!/usr/bin/python
-# -*- coding: <encoding name> -*-
+import mock
+from unittest.mock import MagicMock
 
 try:
     print('trying installed module')
@@ -36,6 +24,15 @@ import logging
 
 kc = KafkaDecorator(  )
 
+class helper_kafka:     
+    def produce(self, *args, **kargs):
+        print( args, kargs)
+        self.m =  (args, kargs)
+    
+    def stop(self):
+        pass
+          
+
 #@kc.host(zookeeper_hosts='localhost:2181' )
 @kc.host(hosts='localhost:9092' )
 class A:
@@ -46,14 +43,28 @@ class A:
     def sendKey(self, msg, key ):
         pass
 
-class TestSum(unittest.TestCase):
-    def teste_Send(self):
+#from kafka_client_decorators.kafka import ProducerFactory
+
+
+class Test1(unittest.TestCase):
+    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=helper_kafka() )
+    def teste_Send(self, Mockkafka ):
+        
+        #Mockkafka.getProducer = MagicMock(return_value=helper_kafka())
+        #attrs = {'topic': 3, 'other.side_effect': KeyError}
+        #Mockkafka.configure_mock(**attrs)
+        #print(Mockkafka)
+        #Mockkafka.return_value = helper_kafka
+        #Mockkafka.topic  = [helper_kafka()] 
+        #print(dir(Mockkafka))
         a = A()
         a.start()
 
         a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
         a.stop()
         a.wait()
+        #assert 
+        print( Mockkafka.call_args_list)
 
 
 if __name__ == '__main__':

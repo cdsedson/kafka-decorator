@@ -1,8 +1,7 @@
 #!/usr/bin/python
 # -*- coding: <encoding name> -*-
 
-from pykafka.exceptions import KafkaException
-from pykafka import KafkaClient
+from .producer_factory import ProducerFactory
 from .logging_helper import getLogger
 
 class Producer:
@@ -20,12 +19,10 @@ class Producer:
             if self.__producer__ is None:
                 self.logger.debug(f"Creating kafka producer: {self.__conf__.topic}" )
                 conn =  self.__parent__.getConnection()
-                kafka_client = KafkaClient( *conn.args, **conn.kargs)
-                t = kafka_client.topics[self.__conf__.topic] 
-                self.__producer__ = t.get_producer( *self.__conf__.args, **self.__conf__.kargs )
+                self.__producer__ = ProducerFactory.getProducer( conn, self.__conf__, self.__conf__.topic)
             self.__producer__.produce( *func_args, **func_kargs )
             self.logger.debug(f"Mesage sent for topic: {self.__conf__.topic}" )
-        except (Exception, KafkaException) as e:
+        except (Exception) as e:
             self.logger.exception(f"Exception raised: {e}" )
             if self.__producer__ is not None:
                 self.__producer__.stop()
