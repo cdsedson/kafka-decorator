@@ -14,7 +14,7 @@ class Client(Thread):
         self.logger.info( f"Creating cliet, listen topics: {[t.topic for t in list_topics_receive]} send topics: {[t.topic for t in list_topics_send]}" )
         
         self.__started__  = True
-        self.__conumers_started = None
+        self.__conumers_failed__ = False
         self.__list_topics_receive__ = list_topics_receive
         self.__connection_args__ = connection_args 
         self.__list_topics_send__ = { p.topic: (p, None) for p in list_topics_send }
@@ -40,7 +40,7 @@ class Client(Thread):
                 self.logger.exception( f"Cant create consumer, topic: {cConf.topic}" )
                 consumers = []
                 break
-        self.__conumers_started__ = True
+        self.__conumers_failed__ = False
         return consumers
         
     def __startConsumers__( self, consumers ):
@@ -68,6 +68,7 @@ class Client(Thread):
             else:
                 oneFailed = True
         if oneFailed == True:
+            self.__conumers_failed__ = True
             self.__stopConsumer__( consumers )
         return init
                         
@@ -76,13 +77,12 @@ class Client(Thread):
         init = True
         while init is True:
             init = self.__waitConsumer__( consumers )
-        self.__conumers_started__ = False
         self.logger.info( f"All consumers finished" )
             
     def __waitProducersFinish__( self ):
         self.logger.info( f"Waiting Producers finished" )
         init = True
-        while self.__conumers_started__  is True:
+        while (not self.__conumers_failed__) and self.__started__ :
             sleep(0.01)
         for p in self.__list_topics_send__.values():
             if p[1] is not None:

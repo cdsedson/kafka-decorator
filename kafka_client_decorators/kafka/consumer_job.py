@@ -44,7 +44,6 @@ class ConsumerJob(Thread):
                 self.__receive__( f )
         except ConsumerStoppedException as e:
             self.logger.debug( f"Exception from topic: {self.__conf__.topic} : {type(e)} {e}" )
-            self.__started__ = False 
 
         self.logger.info( f"Stop listen, topic: {self.__conf__.topic}" )
         
@@ -56,6 +55,7 @@ class ConsumerJob(Thread):
             self.logger.exception( f"Exception from topic, when handling another: {self.__conf__.topic} : {type(e)} {e}" )
         except:
             self.logger.exception( f"Exception from topic, when handling another: {self.__conf__.topic}" )
+        #self.stop()
           
     def stop(self):
         self.logger.info( f"Stopping consumer, topic: {self.__conf__.topic}" )
