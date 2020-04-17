@@ -4,6 +4,12 @@ import time
 from unittest.mock import MagicMock
 from pykafka.exceptions import KafkaException
 from pykafka.exceptions import ConsumerStoppedException
+from kafka_client_decorators.kafka import ConsumerFactory
+from kafka_client_decorators.kafka import ProducerFactory
+from kafka_client_decorators.kafka import ProducerParmeters
+from kafka_client_decorators.kafka import ConnectionParmeters
+from pykafka import KafkaClient
+from threading import Lock 
 
 try:
     print('trying installed module')
@@ -32,14 +38,8 @@ class helper_kafka:
     def __init__(self):
         self.stop_execpt = False
         self.read = []
-    
-    def produce(self, *args, **kargs):
-        if args[0] == 'Except'.encode('utf-8'):
-            self.message  = None
-            self.key =  None
-            raise Exception("Error in send")
-        self.message =  args[0]
-        self.key = kargs['partition_key'] if 'partition_key' in kargs else None
+        self.offset = 1
+        self.lock = Lock()
     
     def stopException( self ):
         self.stop_execpt = True 
@@ -64,14 +64,30 @@ class helper_kafka:
             raise self.excp
             
     def cleanMessage( self  ):
-        self.read = []
+        with self.lock:
+            self.read = []
+            self.offset = 1
+
+    def setMessageSemOffset( self, message, key ):
+        with self.lock:
+            self.read.append( self.M(self.offset, message, key ) )
+            self.offset += 1
         
     def setMessage( self, offset, message, key  ):
         self.read.append( self.M(offset, message, key ) )
+
         
     def setException( self, excepion  ):
-        self.read.append( self.E( excepion ) )
-    
+        with self.lock:
+            self.read.append( self.E( excepion ) )
+
+    def produce(self, *args, **kargs):
+        if args[0] == 'Except'.encode('utf-8'):
+            raise Exception("Error in send")
+        message =  args[0]
+        key = kargs['partition_key'] if 'partition_key' in kargs else None
+        self.setMessageSemOffset( message, key )
+        
     def __iter__(self):
         return self
     
@@ -81,6 +97,15 @@ class helper_kafka:
             raise StopIteration
         message = self.read.pop(0)
         return message.get()
+        
+    def get_producer( self, *args, **kargs ):
+        return self
+        
+    def get_balanced_consumer( self, *args, **kargs ):
+        return self
+        
+    def get_simple_consumer( self, *args, **kargs ):
+        return self
           
 
 kc = KafkaDecorator(  )
@@ -121,239 +146,275 @@ class C:
 
 
 class Test1(unittest.TestCase):
+
     kh = helper_kafka()
-        
-    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
-    def test_send_key(self, Mockkafka ):
-        
-        a = A()
-        a.start()
+    topic1 = helper_kafka()
+    
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
+    def test_send_key(self):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
+            
+            a = A()
+            a.start()
 
-        a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
-        
-        time.sleep(0.5)
-        a.stop()
-        a.wait()
+            a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
+            
+            time.sleep(0.5)
+            a.stop()
+            a.wait()
 
-        assert self.kh.message == 'Hello'.encode('utf-8') 
-        assert self.kh.key == 'world'.encode('utf-8')
+            assert self.topic1.read[0].offset == 1 
+            assert self.topic1.read[0].value == 'Hello'.encode('utf-8') 
+            assert self.topic1.read[0].partition_key == 'world'.encode('utf-8')
         
-    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
-    def test_start_stop(self, Mockkafka ):
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
+    def test_start_stop(self):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
         
-        a = A()
-        a.start()
+            a = A()
+            a.start()
 
-        a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
-        assert not a.is_fineshed()
-        time.sleep(0.5)
-        assert not a.is_fineshed()
-        assert self.kh.message == 'Hello'.encode('utf-8')
-        assert not a.is_fineshed()
-        a.stop()
-        a.wait()
-        assert a.is_fineshed()
-        assert self.kh.message == 'Hello'.encode('utf-8') 
-        assert self.kh.key == 'world'.encode('utf-8') 
-        
-    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
-    def test_send(self, Mockkafka ):
-        
-        a = A()
-        a.start()
+            a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
+            assert not a.is_fineshed()
+            time.sleep(0.5)
+            assert not a.is_fineshed()
+            a.sendKey( 'Hello2'.encode('utf-8'), partition_key='world2'.encode('utf-8') )
+            assert not a.is_fineshed()
+            a.stop()
+            a.wait()
+            assert a.is_fineshed()
+            assert self.topic1.read[0].offset == 1 
+            assert self.topic1.read[0].value == 'Hello'.encode('utf-8')
+            assert self.topic1.read[0].partition_key == 'world'.encode('utf-8')
+            assert self.topic1.read[1].offset == 2 
+            assert self.topic1.read[1].value == 'Hello2'.encode('utf-8') 
+            assert self.topic1.read[1].partition_key == 'world2'.encode('utf-8') 
+    
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
+    def test_send(self ):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
+            
+            a = A()
+            a.start()
 
-        a.sendKey( 'Hello'.encode('utf-8') )
-        a.stop()
-        a.wait()
- 
-        assert self.kh.message == 'Hello'.encode('utf-8') 
-        assert self.kh.key == None
+            a.sendKey( 'Hello'.encode('utf-8') )
+            a.stop()
+            a.wait()
+            
+            assert self.topic1.read[0].offset == 1 
+            assert self.topic1.read[0].value == 'Hello'.encode('utf-8') 
+            assert self.topic1.read[0].partition_key is None 
         
-    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
-    def test_exception(self, Mockkafka ):
-        
-        a = A()
-        a.start()
-        
-        a.sendKey( 'Except'.encode('utf-8'), partition_key='Except'.encode('utf-8') )
-        assert self.kh.message is None
-        assert self.kh.key is None 
-        
-        a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
-        a.stop()
-        a.wait()
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
+    def test_exception(self ):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
+            
+            a = A()
+            a.start()
+            
+            assert len(self.topic1.read) == 0 
+            
+            a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
+            a.stop()
+            a.wait()
 
-        assert self.kh.message == 'Hello'.encode('utf-8') 
-        assert self.kh.key == 'world'.encode('utf-8') 
-        
-    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
-    def test_stop_exception(self, Mockkafka ):
-        
-        self.kh.stopException()
-        
-        a = A()
-        a.start()
-        
-        a.sendKey( 'Erro'.encode('utf-8'), partition_key='Erro'.encode('utf-8') )
-        assert self.kh.message == 'Erro'.encode('utf-8') 
-        assert self.kh.key == 'Erro'.encode('utf-8')
-        assert self.kh.stop_execpt is True
-        
-        a.stop()
-        a.wait()
-        
-        assert self.kh.stop_execpt is False
-        
-        a = A()
-        a.start()
-        
-        a.sendKey( 'Erro'.encode('utf-8'), partition_key='Erro'.encode('utf-8') )
-        assert self.kh.message == 'Erro'.encode('utf-8') 
-        assert self.kh.key == 'Erro'.encode('utf-8')
-        
-        a.stop()
-        a.wait()
-        
-        assert self.kh.stop_execpt is False
-        
-    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
-    def test_receive(self, Mockkafka ):
-        self.kh.cleanMessage(  )
-        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
-        
-        b = B()
-        
-        b.start()
-        b.stop()
-        b.wait()
+            assert self.topic1.read[0].offset == 1 
+            assert self.topic1.read[0].value == 'Hello'.encode('utf-8') 
+            assert self.topic1.read[0].partition_key  == 'world'.encode('utf-8')
 
-        assert b.read[0].offset == 1
-        assert b.read[0].value == 'Hello'.encode('utf-8')
-        assert b.read[0].partition_key == 'world'.encode('utf-8')
         
-    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_simple', return_value=kh )
-    def test_receive_simple(self, Mockkafka ):
-        self.kh.cleanMessage(  )
-        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
+    def test_stop_exception(self ):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
+            
+            self.kh.stopException()
         
-        c = C()
+            a = A()
+            a.start()
         
-        c.start()
-        c.stop()
-        c.wait()
+            a.sendKey( 'Erro'.encode('utf-8'), partition_key='Erro'.encode('utf-8') )            
+            a.stop()
+            a.wait()
+            
+            assert self.topic1.stop_execpt is False
+            
+            a = A()
+            a.start()
+            
+            a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
+            
+            a.stop()
+            a.wait()
+            assert self.topic1.read[0].offset == 1 
+            assert self.topic1.read[0].value == 'Erro'.encode('utf-8') 
+            assert self.topic1.read[0].partition_key  == 'Erro'.encode('utf-8')
+            assert self.topic1.read[1].offset == 2 
+            assert self.topic1.read[1].value == 'Hello'.encode('utf-8') 
+            assert self.topic1.read[1].partition_key  == 'world'.encode('utf-8')
+            
+            assert self.topic1.stop_execpt is False
         
-        assert c.read[0].offset == 1
-        assert c.read[0].value == 'Hello'.encode('utf-8')
-        assert c.read[0].partition_key == 'world'.encode('utf-8')
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
+    def test_receive(self ):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
+            
+            self.topic1.setMessageSemOffset( 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
         
-    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
-    def test_receive_exception(self, Mockkafka ):
-        self.kh.cleanMessage(  )
-        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
-        self.kh.setMessage( 2, 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
-        self.kh.setException( ConsumerStoppedException()  )
-        self.kh.setMessage( 3, 'Hello3'.encode('utf-8'), 'world3'.encode('utf-8') )
-        
-        b = B()
-        
-        b.start()
-        start = time.time()
-        while time.time() < (start + 30):
-            if len( b.read ) == 3:
-                break
-            time.sleep(0.01)
-        
-        timeout = time.time() > (start + 30)
-        
-        b.stop()
-        b.wait()
-        
-        assert not timeout
-        if timeout :
-            return
-        
-        assert b.read[0].offset == 1
-        assert b.read[0].value == 'Hello'.encode('utf-8')
-        assert b.read[0].partition_key == 'world'.encode('utf-8')
-        
-        assert b.read[1].offset == 2
-        assert b.read[1].value == 'Hello2'.encode('utf-8')
-        assert b.read[1].partition_key == 'world2'.encode('utf-8')
-        
-        assert b.read[2].offset == 3
-        assert b.read[2].value == 'Hello3'.encode('utf-8')
-        assert b.read[2].partition_key == 'world3'.encode('utf-8')
-        
-    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
-    def test_receive_exception(self, Mockkafka ):
-        self.kh.cleanMessage(  )
-        self.kh.setException( KafkaException())
-        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
-        self.kh.setException( KafkaException())
-        self.kh.setMessage( 2, 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
-        self.kh.setException( KafkaException())
-        self.kh.setMessage( 3, 'Hello3'.encode('utf-8'), 'world3'.encode('utf-8') )
-        self.kh.setException( Exception())
-        
-        b = B()
-        
-        b.start()
-        start = time.time()
-        while time.time() < (start + 30):
-            if len( b.read ) == 3:
-                break
-            time.sleep(0.01)
-        
-        timeout = time.time() > (start + 30)
-        
-        b.stop()
-        b.wait()
-        
-        assert not timeout
-        if timeout :
-            return
-        
-        assert b.read[0].offset == 1
-        assert b.read[0].value == 'Hello'.encode('utf-8')
-        assert b.read[0].partition_key == 'world'.encode('utf-8')
-        
-        assert b.read[1].offset == 2
-        assert b.read[1].value == 'Hello2'.encode('utf-8')
-        assert b.read[1].partition_key == 'world2'.encode('utf-8')
-        
-        assert b.read[2].offset == 3
-        assert b.read[2].value == 'Hello3'.encode('utf-8')
-        assert b.read[2].partition_key == 'world3'.encode('utf-8')
+            b = B()
+            
+            b.start()
+            b.stop()
+            b.wait()
 
-    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
-    def test_receive_stop_exception(self, Mockkafka ):
-        self.kh.stopException()
+            assert b.read[0].offset == 1
+            assert b.read[0].value == 'Hello'.encode('utf-8')
+            assert b.read[0].partition_key == 'world'.encode('utf-8')
         
-        self.kh.cleanMessage(  )
-        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
+    def test_receive_simple( self ):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
+      
+            self.topic1.setMessageSemOffset( 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+            
+            c = C()
+            
+            c.start()
+            c.stop()
+            c.wait()
+            
+            assert c.read[0].offset == 1
+            assert c.read[0].value == 'Hello'.encode('utf-8')
+            assert c.read[0].partition_key == 'world'.encode('utf-8')
+            
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )    
+    def test_receive_exception(self ):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
         
-        b = B()
+            self.topic1.setMessageSemOffset( 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+            self.topic1.setMessageSemOffset( 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
+            self.topic1.setException( ConsumerStoppedException()  )
+            self.topic1.setMessageSemOffset( 'Hello3'.encode('utf-8'), 'world3'.encode('utf-8') )
+            
+            b = B()
+            
+            b.start()
+            start = time.time()
+            while time.time() < (start + 30):
+                if len( b.read ) == 3:
+                    break
+                time.sleep(0.01)
+            
+            timeout = time.time() > (start + 30)
+            
+            b.stop()
+            b.wait()
+            
+            assert not timeout
+            if timeout :
+                return
+            
+            assert b.read[0].offset == 1
+            assert b.read[0].value == 'Hello'.encode('utf-8')
+            assert b.read[0].partition_key == 'world'.encode('utf-8')
+            
+            assert b.read[1].offset == 2
+            assert b.read[1].value == 'Hello2'.encode('utf-8')
+            assert b.read[1].partition_key == 'world2'.encode('utf-8')
+            
+            assert b.read[2].offset == 3
+            assert b.read[2].value == 'Hello3'.encode('utf-8')
+            assert b.read[2].partition_key == 'world3'.encode('utf-8')
         
-        b.start()
-        b.stop()
-        b.wait()
-        
-        assert b.read[0].offset == 1
-        assert b.read[0].value == 'Hello'.encode('utf-8')
-        assert b.read[0].partition_key == 'world'.encode('utf-8')
-        
-        self.kh.cleanMessage(  )
-        self.kh.setMessage( 2, 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
-        
-        b = B()
-        
-        b.start()
-        b.stop()
-        b.wait()
-        
-        assert b.read[0].offset == 2
-        assert b.read[0].value == 'Hello2'.encode('utf-8')
-        assert b.read[0].partition_key == 'world2'.encode('utf-8')
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )  
+    def test_receive_exception(self ):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
+            
+            self.topic1.setException( KafkaException())
+            self.topic1.setMessageSemOffset( 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+            self.topic1.setException( KafkaException())
+            self.topic1.setMessageSemOffset( 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
+            self.topic1.setException( KafkaException())
+            self.topic1.setMessageSemOffset( 'Hello3'.encode('utf-8'), 'world3'.encode('utf-8') )
+            self.topic1.setException( Exception())
+            
+            b = B()
+            
+            b.start()
+            start = time.time()
+            while time.time() < (start + 30):
+                if len( b.read ) == 3:
+                    break
+                time.sleep(0.01)
+            
+            timeout = time.time() > (start + 30)
+            
+            b.stop()
+            b.wait()
+            
+            assert not timeout
+            if timeout :
+                return
+            
+            assert b.read[0].offset == 1
+            assert b.read[0].value == 'Hello'.encode('utf-8')
+            assert b.read[0].partition_key == 'world'.encode('utf-8')
+            
+            assert b.read[1].offset == 2
+            assert b.read[1].value == 'Hello2'.encode('utf-8')
+            assert b.read[1].partition_key == 'world2'.encode('utf-8')
+            
+            assert b.read[2].offset == 3
+            assert b.read[2].value == 'Hello3'.encode('utf-8')
+            assert b.read[2].partition_key == 'world3'.encode('utf-8')
+
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )  
+    def test_receive_stop_exception(self):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic1 }
+            self.topic1.cleanMessage()
+            
+            self.topic1.stopException()
+            self.topic1.setMessageSemOffset( 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
+            
+            b = B()
+            
+            b.start()
+            b.stop()
+            b.wait()
+            
+            assert b.read[0].offset == 1
+            assert b.read[0].value == 'Hello'.encode('utf-8')
+            assert b.read[0].partition_key == 'world'.encode('utf-8')
+            
+            self.topic1.setMessageSemOffset( 'Hello2'.encode('utf-8'), 'world2'.encode('utf-8') )
+            
+            b = B()
+            
+            b.start()
+            b.stop()
+            b.wait()
+            
+            assert b.read[0].offset == 2
+            assert b.read[0].value == 'Hello2'.encode('utf-8')
+            assert b.read[0].partition_key == 'world2'.encode('utf-8')
         
 if __name__ == '__main__':
     unittest.main()
