@@ -25,11 +25,10 @@ class Client(Thread):
         
     def __createConsumers__( self ):
         self.logger.info( "Creating consumers" )
-        conn = self.__connection_args__ 
         consumers = []
         
-        for cConf in self.__list_topics_receive__:
-            job = ConsumerJob( self, cConf )
+        for conf in self.__list_topics_receive__:
+            job = ConsumerJob( self, conf )
             consumers.append( job )
         self.__conumers_failed__ = False
         return consumers
@@ -50,15 +49,15 @@ class Client(Thread):
             self.__stopConsumer__( consumers )
         
         init = False
-        oneFailed = False
+        one_failed = False
         for t in consumers:
             if t.is_alive() is True: 
                 t.join(0.01)
             if t.is_alive() is True:
                 init = True
             else:
-                oneFailed = True
-        if oneFailed == True:
+                one_failed = True
+        if one_failed == True:
             self.__conumers_failed__ = True
             self.__stopConsumer__( consumers )
         return init
@@ -72,7 +71,6 @@ class Client(Thread):
             
     def __waitProducersFinish__( self ):
         self.logger.info( f"Waiting Producers finished" )
-        init = True
         while (not self.__conumers_failed__) and self.__started__ :
             sleep(0.01)
         for p in self.__list_topics_send__.values():
@@ -94,12 +92,12 @@ class Client(Thread):
 
     def producer(self, topic, *func_args, **func_kargs ):
         self.logger.debug( f"Send message to topic{ topic }" )
-        pConf, p = self.__list_topics_send__[topic]
+        pconf, p = self.__list_topics_send__[topic]
         success = True
         try:
             if p is None: 
-                p = Producer( self, pConf )
-                self.__list_topics_send__[topic] = (pConf, p)
+                p = Producer( self, pconf )
+                self.__list_topics_send__[topic] = (pconf, p)
                 
             p.produce( *func_args, **func_kargs )
         except (Exception) as e:
