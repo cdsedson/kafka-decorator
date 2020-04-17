@@ -18,7 +18,7 @@ class Producer:
             if self.__producer__ is None:
                 self.logger.debug(f"Creating kafka producer: {self.__conf__.topic}" )
                 conn =  self.__parent__.getConnection()
-                self.__producer__ = ProducerFactory.getProducer( conn, self.__conf__)
+                self.__producer__ = ProducerFactory.get_producer( conn, self.__conf__)
             self.__producer__.produce( *func_args, **func_kargs )
             self.logger.debug(f"Mesage sent for topic: {self.__conf__.topic}" )
         except Exception as e:
