@@ -5,12 +5,12 @@ from pykafka.exceptions import KafkaException
 from pykafka.exceptions import ConsumerStoppedException
 from threading import Thread
 from .consumer_parameter import ConsumerParmeters
-from .logging_helper import getLogger
+from .logging_helper import get_logger
 from .consumer_factory import ConsumerFactory 
 
 class ConsumerJob(Thread):
     def __init__(self, parent, conf  ):
-        self.logger = getLogger(__name__)
+        self.logger = get_logger(__name__)
         self.logger.info( f"Creating Consumer for topic: {conf.topic}" )
         
         self.__consumer__ = None

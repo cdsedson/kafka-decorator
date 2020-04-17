@@ -8,7 +8,7 @@ from kafka_client_decorators.kafka import ConsumerFactory
 from kafka_client_decorators.kafka import ProducerFactory
 from kafka_client_decorators.kafka import ProducerParmeters
 from kafka_client_decorators.kafka import ConnectionParmeters
-from kafka_client_decorators.kafka import setDebugLevel
+from kafka_client_decorators.kafka import set_debug_level
 from pykafka import KafkaClient
 from threading import Lock 
 import logging
@@ -186,7 +186,7 @@ class Test1(unittest.TestCase):
     def test_send_key(self):
         with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
             mock_foo.return_value = {'test1': self.topic1 }
-            setDebugLevel(logging.DEBUG)
+            set_debug_level(logging.DEBUG)
             self.topic1.cleanMessage()
             
             a = A()

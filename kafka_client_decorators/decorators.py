@@ -5,11 +5,11 @@ from .kafka import Client
 from .kafka.connection_parameter import ConnectionParmeters
 from .kafka.consumer_parameter import ConsumerParmeters
 from .kafka.producer_parameter import ProducerParmeters
-from .kafka.logging_helper import getLogger
+from .kafka.logging_helper import get_logger
 
 class KafkaDecorator:
     def __init__(self):
-        self.logger = getLogger(__name__)
+        self.logger = get_logger(__name__)
         self.logger.info( "Creating decorator " )
         
         self.__topics_receive__ = []

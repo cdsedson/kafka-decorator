@@ -3,14 +3,14 @@
 
 from .consumer_job import ConsumerJob 
 from .producer import Producer
-from .logging_helper import getLogger
+from .logging_helper import get_logger
 from time import sleep
 
 from threading import Thread
 
 class Client(Thread):
     def __init__(self, connection_args, list_topics_receive, list_topics_send ):
-        self.logger = getLogger(__name__)
+        self.logger = get_logger(__name__)
         self.logger.info( f"Creating cliet, listen topics: {[t.topic for t in list_topics_receive]} send topics: {[t.topic for t in list_topics_send]}" )
         
         self.__started__  = True

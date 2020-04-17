@@ -2,11 +2,11 @@
 # -*- coding: <encoding name> -*-
 
 from .producer_factory import ProducerFactory
-from .logging_helper import getLogger
+from .logging_helper import get_logger
 
 class Producer:
     def __init__(self, parent, conf):
-        self.logger = getLogger(__name__)
+        self.logger = get_logger(__name__)
         self.logger.info( f"Creating Producer for topic: {conf.topic}" )
         self.__parent__ = parent
         self.__conf__ = conf
