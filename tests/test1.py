@@ -8,9 +8,11 @@ from kafka_client_decorators.kafka import ConsumerFactory
 from kafka_client_decorators.kafka import ProducerFactory
 from kafka_client_decorators.kafka import ProducerParmeters
 from kafka_client_decorators.kafka import ConnectionParmeters
+from kafka_client_decorators.kafka import setDebugLevel
 from pykafka import KafkaClient
 from threading import Lock 
-
+import logging
+  
 try:
     print('trying installed module')
     from kafka_client_decorators import KafkaDecorator
@@ -71,12 +73,8 @@ class helper_kafka:
     def setMessageSemOffset( self, message, key ):
         with self.lock:
             self.read.append( self.M(self.offset, message, key ) )
-            self.offset += 1
-        
-    def setMessage( self, offset, message, key  ):
-        self.read.append( self.M(offset, message, key ) )
-
-        
+            self.offset += 1        
+       
     def setException( self, excepion  ):
         with self.lock:
             self.read.append( self.E( excepion ) )
@@ -142,18 +140,16 @@ class C:
     @kc3.simple_consumer('test1', consumer_group='testgroup3')
     def get(self, msg):
         self.read.append(msg)
-#from kafka_client_decorators.kafka import ProducerFactory
-
 
 class Test1(unittest.TestCase):
 
-    kh = helper_kafka()
     topic1 = helper_kafka()
     
     @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
     def test_send_key(self):
         with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
             mock_foo.return_value = {'test1': self.topic1 }
+            setDebugLevel(logging.DEBUG)
             self.topic1.cleanMessage()
             
             a = A()
