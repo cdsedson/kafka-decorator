@@ -141,9 +141,46 @@ class C:
     def get(self, msg):
         self.read.append(msg)
 
+kc4 = KafkaDecorator(  )
+
+@kc4.host(hosts='localhost:9092' )
+class D:
+    def __init__(self, testA, cls):
+        self.a = testA
+        self.cls = cls
+        pass
+
+    @kc4.balanced_consumer('test1', consumer_group='testgroup3', auto_commit_enable=True, managed=True, consumer_timeout_ms=1000)
+    def get(self, msg):
+        self.message1 = msg
+        self.send( msg.value )
+
+    @kc4.simple_consumer('test2', consumer_group='testgroup4', auto_commit_enable=True, consumer_timeout_ms=1000)
+    def get2(self, msg):
+        self.message2 = msg
+        self.cls.stop(self)
+
+    @kc4.producer('test2')
+    def send(self, msg):
+        pass
+
+    @kc4.producer('test1')
+    def sendKey(self, msg, key ):
+        pass
+
+class E:
+
+    def __init__(self):
+        pass
+        
+    def stop(self, conn):
+        conn.stop()
+
 class Test1(unittest.TestCase):
 
     topic1 = helper_kafka()
+    topic2 = helper_kafka()
+    topic3 = helper_kafka()
     
     @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )
     def test_send_key(self):
@@ -233,7 +270,7 @@ class Test1(unittest.TestCase):
             mock_foo.return_value = {'test1': self.topic1 }
             self.topic1.cleanMessage()
             
-            self.kh.stopException()
+            self.topic1.stopException()
         
             a = A()
             a.start()
@@ -411,6 +448,26 @@ class Test1(unittest.TestCase):
             assert b.read[0].offset == 2
             assert b.read[0].value == 'Hello2'.encode('utf-8')
             assert b.read[0].partition_key == 'world2'.encode('utf-8')
-        
+
+    @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )  
+    def test_send_receive_many(self):
+        with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
+            mock_foo.return_value = {'test1': self.topic2,  'test2': self.topic3}
+            self.topic1.cleanMessage()
+            self.topic2.cleanMessage()
+
+            a = D('Example', E())
+            a.start()
+            a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
+            a.wait() 
+            
+            assert a.message1.offset == 1
+            assert a.message1.value == 'Hello'.encode('utf-8')
+            assert a.message1.partition_key == 'world'.encode('utf-8')
+            
+            assert a.message1.offset == 1
+            assert a.message1.value == 'Hello'.encode('utf-8')
+            assert a.message1.partition_key == 'world'.encode('utf-8')
+            
 if __name__ == '__main__':
     unittest.main()
