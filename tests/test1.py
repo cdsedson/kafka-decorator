@@ -136,6 +136,24 @@ class Test1(unittest.TestCase):
         a.wait()
 
         assert self.kh.message == 'Hello'.encode('utf-8') 
+        assert self.kh.key == 'world'.encode('utf-8')
+        
+    @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )
+    def test_start_stop(self, Mockkafka ):
+        
+        a = A()
+        a.start()
+
+        a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
+        assert not a.is_fineshed()
+        time.sleep(0.5)
+        assert not a.is_fineshed()
+        assert self.kh.message == 'Hello'.encode('utf-8')
+        assert not a.is_fineshed()
+        a.stop()
+        a.wait()
+        assert a.is_fineshed()
+        assert self.kh.message == 'Hello'.encode('utf-8') 
         assert self.kh.key == 'world'.encode('utf-8') 
         
     @mock.patch( 'kafka_client_decorators.kafka.ProducerFactory.getProducer', return_value=kh )

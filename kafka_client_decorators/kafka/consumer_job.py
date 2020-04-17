@@ -55,7 +55,6 @@ class ConsumerJob(Thread):
             self.logger.exception( f"Exception from topic, when handling another: {self.__conf__.topic} : {type(e)} {e}" )
         except:
             self.logger.exception( f"Exception from topic, when handling another: {self.__conf__.topic}" )
-        #self.stop()
           
     def stop(self):
         self.logger.info( f"Stopping consumer, topic: {self.__conf__.topic}" )

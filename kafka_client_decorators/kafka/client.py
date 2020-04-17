@@ -29,17 +29,8 @@ class Client(Thread):
         consumers = []
         
         for cConf in self.__list_topics_receive__:
-            try:
-                job = ConsumerJob( self, cConf )
-                consumers.append( job )
-            except Exception as e:
-                self.logger.exception( f"Cant create consumer, topic: {cConf.topic} {type(e)} {e}" )
-                consumers = []
-                break
-            except:
-                self.logger.exception( f"Cant create consumer, topic: {cConf.topic}" )
-                consumers = []
-                break
+            job = ConsumerJob( self, cConf )
+            consumers.append( job )
         self.__conumers_failed__ = False
         return consumers
         
@@ -94,16 +85,11 @@ class Client(Thread):
         self.__started__  = True
         
         while self.__started__  == True:
-            try:
-                sleep(0.1)
-                consumers = self.__createConsumers__( )
-                self.__startConsumers__( consumers )
-                self.__waitConsumersFinish__( consumers )
-                self.__waitProducersFinish__( )
-            except Exception as e:
-                self.logger.exception( f"App error: {type(e)} {e}" )
-            except:
-                self.logger.exception( f"App error" )
+            sleep(0.1)
+            consumers = self.__createConsumers__( )
+            self.__startConsumers__( consumers )
+            self.__waitConsumersFinish__( consumers )
+            self.__waitProducersFinish__( )
         self.logger.info( f"App finished" )
 
     def producer(self, topic, *func_args, **func_kargs ):
@@ -118,9 +104,6 @@ class Client(Thread):
             p.produce( *func_args, **func_kargs )
         except (Exception) as e:
             self.logger.exception( f"Cant send topic: {topic} error: {type(e)} {e}" )
-            success = False
-        except:
-            self.logger.exception( "Send error" )
             success = False
         return success
 
