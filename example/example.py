@@ -10,17 +10,6 @@ except:
     sys.path.insert(1, '../')
     from kafka_client_decorators import KafkaDecorator
 
-#from kafka_client_decorators.kafka.logging_helper import setDebugLevel
-import logging
-
-#logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-#    datefmt='%Y-%m-%d:%H:%M:%S',
-#    level=logging.DEBUG)
-    
-#logging.basicConfig(level=logging.DEBUG)
-
-#setDebugLevel(logging.INFO)
-
 kc = KafkaDecorator(  )
 
 #@kc.host(zookeeper_hosts='localhost:2181' )
