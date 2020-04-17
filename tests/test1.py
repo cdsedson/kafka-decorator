@@ -31,7 +31,6 @@ class helper_kafka:
 
     def __init__(self):
         self.stop_execpt = False
-        self.stop_sleep = False 
         self.read = []
     
     def produce(self, *args, **kargs):
@@ -44,14 +43,8 @@ class helper_kafka:
     
     def stopException( self ):
         self.stop_execpt = True 
-    
-    def stopSleep( self ):
-        self.stop_sleep = True 
         
     def stop(self):
-        if self.stop_sleep:
-            self.stop_sleep = False 
-            time.sleep(5)
         if self.stop_execpt is True:
             self.stop_execpt = False
             raise Exception( "Stop error" )
@@ -137,6 +130,8 @@ class Test1(unittest.TestCase):
         a.start()
 
         a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
+        
+        time.sleep(0.5)
         a.stop()
         a.wait()
 
@@ -342,22 +337,5 @@ class Test1(unittest.TestCase):
         assert b.read[0].value == 'Hello2'.encode('utf-8')
         assert b.read[0].partition_key == 'world2'.encode('utf-8')
         
-        
-    @mock.patch( 'kafka_client_decorators.kafka.ConsumerFactory.get_consumer_balanced', return_value=kh )
-    def test_receive_stop_sleep(self, Mockkafka ):
-        self.kh.stopSleep(  )
-        self.kh.cleanMessage(  )
-        self.kh.setMessage( 1, 'Hello'.encode('utf-8'), 'world'.encode('utf-8') )
-        
-        b = B()
-        
-        b.start()
-        b.stop()
-        b.wait()
-
-        assert b.read[0].offset == 1
-        assert b.read[0].value == 'Hello'.encode('utf-8')
-        assert b.read[0].partition_key == 'world'.encode('utf-8')
-
 if __name__ == '__main__':
     unittest.main()
