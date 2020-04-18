@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kafka_client_decorators",
-    version="0.8.3",
+    version="0.8.4",
     author="Edson Cardoso",
     author_email="edsonsn2@hotmail.com",
     description="Decorator interface to pykafka",
