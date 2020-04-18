@@ -1,0 +1,6 @@
+include LICENSE
+include README.md
+include requirements_test.txt
+include requirements.txt
+include setup.cfg
+

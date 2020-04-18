@@ -4,36 +4,17 @@ import time
 from unittest.mock import MagicMock
 from pykafka.exceptions import KafkaException
 from pykafka.exceptions import ConsumerStoppedException
-from kafka_client_decorators.kafka import ConsumerFactory
-from kafka_client_decorators.kafka import ProducerFactory
-from kafka_client_decorators.kafka import ProducerParmeters
-from kafka_client_decorators.kafka import ConnectionParmeters
-from kafka_client_decorators.kafka import set_debug_level
+from ..decorators import KafkaDecorator 
+from ..kafka import ConsumerFactory
+from ..kafka import ProducerFactory
+from ..kafka import ProducerParmeters
+from ..kafka import ConnectionParmeters
+from ..kafka import set_debug_level
 from pykafka import KafkaClient
 from threading import Lock 
 import logging
-  
-try:
-    print('trying installed module')
-    from kafka_client_decorators import KafkaDecorator
-except:
-    print('installed module failed, trying from path')
-    import sys
-    sys.path.insert(1, '../')
-    from kafka_client_decorators import KafkaDecorator
-
-#from kafka_client_decorators.kafka.logging_helper import setDebugLevel
+ 
 import logging
-
-#logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-#    datefmt='%Y-%m-%d:%H:%M:%S',
-#    level=logging.DEBUG)
-    
-#logging.basicConfig(level=logging.DEBUG)
-
-#setDebugLevel(logging.INFO)
-
-
 
 class helper_kafka:
 
