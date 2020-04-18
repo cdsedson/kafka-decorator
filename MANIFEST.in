@@ -1,2 +1,4 @@
 include LICENSE
-recursive-include tests *
+include requirements.txt
+include requirements_test.txt
+include tests/*.py

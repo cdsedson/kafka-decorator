@@ -10,7 +10,7 @@ with open('requirements.txt') as f:
     required = [x.strip() for x in f.read().splitlines()]
 
 with open('requirements_test.txt') as f:
-    required_test = [x.strip() for x in f.read().splitlines()] + required
+    required_test = [x.strip() for x in f.read().splitlines()]
 
 setuptools.setup(
     name="kafka_client_decorators",
@@ -32,6 +32,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    include_package_data=True,
     python_requires='>=3.6',
 )

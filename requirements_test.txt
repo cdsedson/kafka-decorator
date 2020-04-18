@@ -1,3 +1,4 @@
+pykafka >= 2.7.1
 mock
 nose
 coverage
