@@ -4,12 +4,12 @@ import time
 from unittest.mock import MagicMock
 from pykafka.exceptions import KafkaException
 from pykafka.exceptions import ConsumerStoppedException
-from ..decorators import KafkaDecorator 
-from ..kafka import ConsumerFactory
-from ..kafka import ProducerFactory
-from ..kafka import ProducerParmeters
-from ..kafka import ConnectionParmeters
-from ..kafka import set_debug_level
+from kafka_client_decorators.decorators import KafkaDecorator 
+from kafka_client_decorators.kafka import ConsumerFactory
+from kafka_client_decorators.kafka import ProducerFactory
+from kafka_client_decorators.kafka import ProducerParmeters
+from kafka_client_decorators.kafka import ConnectionParmeters
+from kafka_client_decorators.kafka import set_debug_level
 from pykafka import KafkaClient
 from threading import Lock 
 import logging
