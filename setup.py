@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="kafka_client_decorators",
-    version="0.8.1",
+    version="0.8.3",
     author="Edson Cardoso",
     author_email="edsonsn2@hotmail.com",
     description="Decorator interface to pykafka",
@@ -18,6 +18,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     tests_require=['nose', 'mock'],
     test_suite = 'nose.collector',
+    install_requires=['pykafka'],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
