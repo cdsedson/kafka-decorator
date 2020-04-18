@@ -249,10 +249,12 @@ class Test1(unittest.TestCase):
         with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
             mock_foo.return_value = {'test1': self.topic1 }
             self.topic1.cleanMessage()
-            
+
             a = A()
             a.start()
-            
+
+            a.sendKey( 'Except'.encode('utf-8'), partition_key='Except'.encode('utf-8') )
+
             assert len(self.topic1.read) == 0 
             
             a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
