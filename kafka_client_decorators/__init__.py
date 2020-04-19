@@ -3,5 +3,4 @@
 
 from .decorators import KafkaDecorator
 
-
-
+__all__ = [KafkaDecorator]
