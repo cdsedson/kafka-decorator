@@ -358,7 +358,7 @@ class Test1(unittest.TestCase):
             assert b.read[2].partition_key == 'world3'.encode('utf-8')
         
     @mock.patch.object( KafkaClient, '__init__', lambda self, *args, **kargs: None )  
-    def test_receive_exception(self ):
+    def test_receive_exception_many(self ):
         with mock.patch('pykafka.KafkaClient.topics', new_callable=mock.PropertyMock, create=True) as mock_foo:
             mock_foo.return_value = {'test1': self.topic1 }
             self.topic1.cleanMessage()
