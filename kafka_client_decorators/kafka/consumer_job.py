@@ -60,7 +60,7 @@ class ConsumerJob(Thread):
         self.__started__ = True
         try:
             self.__listen__()
-        except KafkaException as e:
+        except (Exception, KafkaException) as e:
             self.logger.exception("Exception from topic: "
                                   f"{self.__conf__.topic} : {type(e)} {e}")
 
