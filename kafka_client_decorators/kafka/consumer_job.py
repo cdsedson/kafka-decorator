@@ -4,12 +4,14 @@
 from pykafka.exceptions import KafkaException
 from pykafka.exceptions import ConsumerStoppedException
 from threading import Thread
-from .consumer_parameter import ConsumerParmeters
 from .logging_helper import get_logger
 from .consumer_factory import ConsumerFactory
 
 
 class ConsumerJob(Thread):
+    SIMPLE = 1
+    BALANCED = 2
+    
     def __init__(self, parent, conf):
         self.logger = get_logger(__name__)
         self.logger.info(f"Creating Consumer for topic: {conf.topic}")
@@ -37,7 +39,7 @@ class ConsumerJob(Thread):
         self.logger.info(f"Start listen, topic: {self.__conf__.topic}")
         try:
             conn = self.__parent__.getConnection()
-            if self.__conf__.kind == ConsumerParmeters.BALANCED:
+            if self.__conf__.kind == ConsumerJob.BALANCED:
                 self.logger.info("Create balanced consumer to topic: "
                                  f"{self.__conf__.topic}")
                 self.__consumer__ = ConsumerFactory.get_consumer_balanced(

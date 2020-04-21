@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from .consumer_job import ConsumerJob
 from .producer import Producer
 from .logging_helper import get_logger
 from time import sleep
@@ -10,6 +9,9 @@ from threading import Thread
 
 
 class Client(Thread):
+    SIMPLE = 1
+    BALANCED = 2
+
     def __init__(self, connection_args, list_topics_receive, list_topics_send):
         self.logger = get_logger(__name__)
         self.logger.info("Creating cliet, listen topics: "
@@ -31,8 +33,8 @@ class Client(Thread):
         self.logger.info("Creating consumers")
         consumers = []
 
-        for conf in self.__list_topics_receive__:
-            job = ConsumerJob(self, conf)
+        for builder in self.__list_topics_receive__:
+            job = builder.create( self )
             consumers.append(job)
         self.__conumers_failed__ = False
         return consumers
