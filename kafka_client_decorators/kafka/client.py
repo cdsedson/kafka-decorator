@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from .producer import Producer
 from .logging_helper import get_logger
 from time import sleep
 
@@ -23,7 +22,7 @@ class Client(Thread):
         self.__list_topics_receive__ = list_topics_receive
         self.__connection_args__ = connection_args
         self.__list_topics_send__ = {
-            p.topic: (p, None) for p in list_topics_send}
+            p.name: (p, None) for p in list_topics_send}
         Thread.__init__(self)
 
     def getConnection(self):
@@ -96,19 +95,20 @@ class Client(Thread):
             self.__waitProducersFinish__()
         self.logger.info("App finished")
 
-    def producer(self, topic, *func_args, **func_kargs):
-        self.logger.debug(f"Send message to topic{ topic }")
-        pconf, p = self.__list_topics_send__[topic]
+    def producer(self, name, *func_args, **func_kargs):
+        self.logger.debug(f"Send message, function: { name }")
+        pbuilder, p = self.__list_topics_send__[name]
+        self.logger.debug(f"Send message to topic: {pbuilder.topic}")
         success = True
         try:
             if p is None:
-                p = Producer(self, pconf)
-                self.__list_topics_send__[topic] = (pconf, p)
+                p = pbuilder.create(self)
+                self.__list_topics_send__[name] = (pbuilder, p)
 
             p.produce(*func_args, **func_kargs)
         except (Exception) as e:
             self.logger.exception("Cant send topic: "
-                                  f"{topic} error: {type(e)} {e}")
+                                  f"{pbuilder.topic} error: {type(e)} {e}")
             success = False
         return success
 

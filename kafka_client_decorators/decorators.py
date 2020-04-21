@@ -56,11 +56,11 @@ class KafkaDecorator:
 
     def producer(self, topic, *args, **kargs):
         self.logger.info(f"Adding producer, topic: {topic}")
-        p_conf = ProducerParmeters(topic, args, kargs)
-        self.__topics_send__.append(p_conf)
-
         def inner_producer(f):
+            p_conf = ProducerParmeters(f.__name__, topic, args, kargs)
+            self.__topics_send__.append(p_conf)
+
             def inner(obj, *func_args, **func_kargs):
-                return self.cls.producer(topic, *func_args, **func_kargs)
+                return self.cls.producer(f.__name__, *func_args, **func_kargs)
             return inner
         return inner_producer
