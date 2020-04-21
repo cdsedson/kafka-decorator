@@ -3,7 +3,7 @@
 
 from .producer import Producer
 
-class ProducerParmeters:
+class ProducerBuilder:
     def __init__(self, name, topic, args, kargs):
         self.name = name
         self.args = args

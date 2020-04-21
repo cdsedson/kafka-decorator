@@ -3,7 +3,7 @@
 
 from .consumer_job import ConsumerJob
 
-class ConsumerParmeters:
+class ConsumerBuilder:
     SIMPLE = ConsumerJob.SIMPLE
     BALANCED = ConsumerJob.BALANCED
 

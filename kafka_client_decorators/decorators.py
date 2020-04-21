@@ -3,8 +3,8 @@
 
 from .kafka import Client
 from .kafka.connection_parameter import ConnectionParmeters
-from .kafka.consumer_parameter import ConsumerParmeters
-from .kafka.producer_parameter import ProducerParmeters
+from .kafka.consumer_builder import ConsumerBuilder
+from .kafka.producer_builder import ProducerBuilder
 from .kafka.logging_helper import get_logger
 
 
@@ -38,8 +38,8 @@ class KafkaDecorator:
         self.logger.info(f"Adding balanced consumer, topic: {topic}")
 
         def kafka_client_consumer_inner(f):
-            c_conf = ConsumerParmeters(
-                ConsumerParmeters.BALANCED, topic, func_args, func_kargs, f)
+            c_conf = ConsumerBuilder(
+                ConsumerBuilder.BALANCED, topic, func_args, func_kargs, f)
             self.__topics_receive__.append(c_conf)
             return f
         return kafka_client_consumer_inner
@@ -48,8 +48,8 @@ class KafkaDecorator:
         self.logger.info(f"Adding simple consumer, topic: {topic}")
 
         def kafka_client_consumer_inner(f):
-            c_conf = ConsumerParmeters(
-                ConsumerParmeters.SIMPLE, topic, func_args, func_kargs, f)
+            c_conf = ConsumerBuilder(
+                ConsumerBuilder.SIMPLE, topic, func_args, func_kargs, f)
             self.__topics_receive__.append(c_conf)
             return f
         return kafka_client_consumer_inner
@@ -57,7 +57,7 @@ class KafkaDecorator:
     def producer(self, topic, *args, **kargs):
         self.logger.info(f"Adding producer, topic: {topic}")
         def inner_producer(f):
-            p_conf = ProducerParmeters(f.__name__, topic, args, kargs)
+            p_conf = ProducerBuilder(f.__name__, topic, args, kargs)
             self.__topics_send__.append(p_conf)
 
             def inner(obj, *func_args, **func_kargs):
