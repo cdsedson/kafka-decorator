@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# -*- coding: <encoding name> -*-
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 from pykafka.exceptions import KafkaException
 from pykafka.exceptions import ConsumerStoppedException

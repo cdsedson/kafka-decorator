@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# -*- coding: <encoding name> -*-
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 from .producer_factory import ProducerFactory
 from .logging_helper import get_logger

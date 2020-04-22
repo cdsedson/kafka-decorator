@@ -7,4 +7,4 @@ build
 .scannerwork/
 coverage.xml
 nosetests.xml
-
+.tox

@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# -*- coding: <encoding name> -*-
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
 
 from .consumer_job import ConsumerJob
 from .producer import Producer
