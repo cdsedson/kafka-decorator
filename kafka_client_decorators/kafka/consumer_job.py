@@ -3,11 +3,10 @@
 
 from threading import Thread
 from .logging_helper import get_logger
-from .consumer_factory import ConsumerFactory
 
 
 class ConsumerJob(Thread):
-    
+
     def __init__(self, parent, function, conn):
         self.logger = get_logger(__name__)
         self.logger.info(f"Creating Consumer for {conn}")

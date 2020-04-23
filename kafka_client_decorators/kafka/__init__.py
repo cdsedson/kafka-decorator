@@ -20,4 +20,5 @@ __all__ = [Client,
            ConsumerBuilder,
            ProducerBuilder,
            ConnectionBuilder,
-           set_debug_level]
+           set_debug_level,
+           get_logger]

@@ -33,7 +33,7 @@ class Client(Thread):
         consumers = []
 
         for builder in self.__list_topics_receive__:
-            job = builder.create( self )
+            job = builder.create(self)
             consumers.append(job)
         self.__conumers_failed__ = False
         return consumers

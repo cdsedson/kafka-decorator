@@ -24,10 +24,9 @@ class ConsumerFactory:
         return cons
 
     def __str__(self):
-        str_type =''
+        str_type = ''
         if self.__kind__ == ConsumerFactory.BALANCED:
             str_type = 'Balance'
         else:
             str_type = 'Simple'
         return f"Consumer {str_type}, topic: {self.__topic__}"
-

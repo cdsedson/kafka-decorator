@@ -3,6 +3,7 @@
 
 from pykafka import KafkaClient
 
+
 class ConnectionBuilder:
     def __init__(self, args, kargs):
         self.__args__ = args

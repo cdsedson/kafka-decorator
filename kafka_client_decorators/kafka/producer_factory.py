@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+
 class ProducerFactory:
     def __init__(self, conn, topic, args, kargs):
         self.__args__ = args
@@ -15,5 +16,3 @@ class ProducerFactory:
 
     def __str__(self):
         return f"topic: {self.__topic__}"
-
-
