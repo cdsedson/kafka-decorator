@@ -15,7 +15,7 @@ class Client(Thread):
         self.logger = get_logger(__name__)
         self.logger.info("Creating cliet, listen topics: "
                          f"{[t.topic for t in list_topics_receive]} "
-                         f"send topics: {[t.topic for t in list_topics_send]}")
+                         f"send topics: {[t for t in list_topics_send]}")
 
         self.__started__ = True
         self.__conumers_failed__ = False
@@ -98,7 +98,7 @@ class Client(Thread):
     def producer(self, name, *func_args, **func_kargs):
         self.logger.debug(f"Send message, function: { name }")
         pbuilder, p = self.__list_topics_send__[name]
-        self.logger.debug(f"Send message to topic: {pbuilder.topic}")
+        self.logger.debug(f"Send message to topic: {pbuilder}")
         success = True
         try:
             if p is None:
@@ -107,8 +107,8 @@ class Client(Thread):
 
             p.produce(*func_args, **func_kargs)
         except (Exception) as e:
-            self.logger.exception("Cant send topic: "
-                                  f"{pbuilder.topic} error: {type(e)} {e}")
+            self.logger.exception(f"Cant send: {pbuilder} "
+                                  f"error: {type(e)} {e}")
             success = False
         return success
 

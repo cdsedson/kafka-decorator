@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .client import Client
+from .producer import Producer
 from .producer_factory import ProducerFactory
 from .consumer_factory import ConsumerFactory
 from .consumer_builder import ConsumerBuilder
@@ -11,6 +12,7 @@ from .logging_helper import set_debug_level
 from .logging_helper import get_logger
 
 __all__ = [Client,
+           Producer,
            ProducerFactory,
            ConsumerFactory,
            ConsumerBuilder,
