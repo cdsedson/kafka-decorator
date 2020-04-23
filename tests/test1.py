@@ -10,12 +10,9 @@ from pykafka.exceptions import ConsumerStoppedException
 from kafka_client_decorators.decorators import KafkaDecorator 
 from kafka_client_decorators.kafka import ConsumerFactory
 from kafka_client_decorators.kafka import ProducerFactory
-from kafka_client_decorators.kafka import ConnectionParmeters
 from kafka_client_decorators.kafka import set_debug_level
 from pykafka import KafkaClient
 from threading import Lock 
-import logging
- 
 import logging
 
 class helper_kafka:

@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from .kafka import Client
-from .kafka.connection_parameter import ConnectionParmeters
-from .kafka.consumer_builder import ConsumerBuilder
-from .kafka.producer_builder import ProducerBuilder
-from .kafka.logging_helper import get_logger
+from .kafka import ConnectionBuilder
+from .kafka import ConsumerBuilder
+from .kafka import ProducerBuilder
+from .kafka import get_logger
 
 
 class KafkaDecorator:
@@ -31,7 +31,7 @@ class KafkaDecorator:
                     cls.__init__(obj, *iargs, **ikargs)
                     self.cls = obj
             return NewCls
-        self.__connection__ = ConnectionParmeters(args, kargs)
+        self.__connection__ = ConnectionBuilder(args, kargs)
         return inner
 
     def balanced_consumer(self, topic, *func_args, **func_kargs):

@@ -6,13 +6,14 @@ from .producer_factory import ProducerFactory
 from .consumer_factory import ConsumerFactory
 from .consumer_builder import ConsumerBuilder
 from .producer_builder import ProducerBuilder
-from .connection_parameter import ConnectionParmeters
+from .connection_builder import ConnectionBuilder
 from .logging_helper import set_debug_level
+from .logging_helper import get_logger
 
 __all__ = [Client,
            ProducerFactory,
            ConsumerFactory,
            ConsumerBuilder,
            ProducerBuilder,
-           ConnectionParmeters,
+           ConnectionBuilder,
            set_debug_level]
