@@ -19,7 +19,7 @@ class A:
         print('default')
         pass
 
-    @kc.balanced_consumer('topicPositionsJSON', consumer_group='testg1', auto_commit_enable=True, managed=True, consumer_timeout_ms=1000)
+    @kc.balanced_consumer('teste', consumer_group='testg1', auto_commit_enable=True, managed=True, consumer_timeout_ms=1000)
     def get(self, msg):
         print ( f'one, offset: {msg.offset} len: {len(msg.value)} ' )
         self.send2( msg.value, partition_key="chave_2".encode('utf-8') )
