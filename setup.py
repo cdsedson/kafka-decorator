@@ -14,7 +14,7 @@ with open('requirements_test.txt') as f:
 
 setuptools.setup(
     name="kafka_client_decorators",
-    version="0.9.7",
+    version="0.9.8",
     author="Edson Cardoso",
     author_email="edsonsn2@hotmail.com",
     description="Decorator interface to pykafka",
