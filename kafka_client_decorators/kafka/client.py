@@ -14,8 +14,8 @@ class Client(Thread):
     def __init__(self, connection_args, list_topics_receive, list_topics_send):
         self.logger = get_logger(__name__)
         self.logger.info("Creating cliet, listen topics: "
-                         f"{[t.topic for t in list_topics_receive]} "
-                         f"send topics: {[t for t in list_topics_send]}")
+                         f"{[str(t) for t in list_topics_receive]} "
+                         f"send topics: {[str(t) for t in list_topics_send]}")
 
         self.__started__ = True
         self.__conumers_failed__ = False
