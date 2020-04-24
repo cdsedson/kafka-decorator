@@ -3,7 +3,7 @@ This module is based on pykafka project (https://github.com/Parsely/pykafka.git)
 
 * @KafkaDecorator.host
 The first defines the connection parameters and
-its parameters are the same of pykafka.KafkaClient  
+its parameters are the same of *pykafka.KafkaClient*  
 
 
 * @KafkaDecorator.balanced_consumer defines a balanced consumer and
