@@ -1,28 +1,26 @@
+#Decorators to kafka
+This module is based on pykafka project (https://github.com/Parsely/pykafka.git) and define a class KafkaDecorator and its 4 decorators
 
-
-This module is based on pykafka project (https://github.com/Parsely/pykafka.git) 
-and define a class KafkaDecorator and its 4 decorators
-
-@KafkaDecorator.host
-The first defines the connection parameters
+* @KafkaDecorator.host
+The first defines the connection parameters and
 its parameters are the same of pykafka.KafkaClient  
 
 
-@KafkaDecorator.balanced_consumer
-its parameters are the same of pykafka.topic.get_balanced_consumer function
+* @KafkaDecorator.balanced_consumer defines a balanced consumer and
+its parameters are the same of *pykafka.topic.get_balanced_consumer* function
 
 
-@KafkaDecorator.simple_consumer
-its parameters are the same of pykafka.topic.get_simple_consumer function
+* @KafkaDecorator.simple_consumer defines a simple consumer and
+its parameters are the same of *pykafka.topic.get_simple_consumer* function
 
-its parameters are the same of pykafka.topic.get_producer function
-@KafkaDecorator.producer
+* @KafkaDecorator.producer defines a producer and
+its parameters are the same of *pykafka.topic.get_producer* function
 
-Install
+#Install
 
 	pip install kafka-client-decorators
  
-How to use
+#Example
 ```python
 from kafka_client_decorators import KafkaDecorator
 
