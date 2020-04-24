@@ -23,7 +23,7 @@ Install
 	pip install kafka-client-decorators
  
 How to use
-
+```python
 	from kafka_client_decorators import KafkaDecorator
 	from kafka_client_decorators.kafka.logging_helper import setDebugLevel
 	import logging
@@ -71,6 +71,6 @@ How to use
 	a.sendKey( 'Hello'.encode('utf-8'), partition_key='world'.encode('utf-8') )
 
 	a.wait()
-
+```
 
 
