@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from .kafka import Client
+from .client import Client
 from .kafka import ConnectionBuilder
-from .kafka import ConsumerBuilder
-from .kafka import ProducerBuilder
-from .kafka import get_logger
+from .client import ConsumerBuilder
+from .client import ProducerBuilder
+from .client import get_logger
 
 
 class KafkaDecorator:
@@ -38,8 +38,7 @@ class KafkaDecorator:
         self.logger.info(f"Adding balanced consumer, topic: {topic}")
 
         def kafka_client_consumer_inner(f):
-            c_conf = ConsumerBuilder(
-                ConsumerBuilder.BALANCED, topic, func_args, func_kargs, f)
+            c_conf = ConsumerBuilder(topic, True, func_args, func_kargs, f)
             self.__topics_receive__.append(c_conf)
             return f
         return kafka_client_consumer_inner
@@ -48,8 +47,7 @@ class KafkaDecorator:
         self.logger.info(f"Adding simple consumer, topic: {topic}")
 
         def kafka_client_consumer_inner(f):
-            c_conf = ConsumerBuilder(
-                ConsumerBuilder.SIMPLE, topic, func_args, func_kargs, f)
+            c_conf = ConsumerBuilder(topic, False, func_args, func_kargs, f)
             self.__topics_receive__.append(c_conf)
             return f
         return kafka_client_consumer_inner

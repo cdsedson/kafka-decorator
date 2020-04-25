@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 from . import Producer
-from . import ProducerFactory
 
 
 class ProducerBuilder:
@@ -14,8 +13,8 @@ class ProducerBuilder:
 
     def create(self, parent):
         conn = parent.getConnection()
-        prod = ProducerFactory(conn, self.__topic__,
-                               self.__args__, self.__kargs__)
+        prod = conn.get_producer(self.__topic__,
+                                 self.__args__, self.__kargs__)
         return Producer(prod)
 
     def __str__(self):
