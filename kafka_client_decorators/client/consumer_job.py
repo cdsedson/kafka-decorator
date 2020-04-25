@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from threading import Thread
-from .logging_helper import get_logger
+from ..util import get_logger
 
 
 class ConsumerJob(Thread):

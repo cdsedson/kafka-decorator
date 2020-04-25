@@ -5,7 +5,7 @@ from .client import Client
 from .kafka import ConnectionBuilder
 from .client import ConsumerBuilder
 from .client import ProducerBuilder
-from .client import get_logger
+from .util import get_logger
 
 
 class KafkaDecorator:

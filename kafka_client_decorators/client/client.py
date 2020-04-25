@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from .logging_helper import get_logger
+from ..util import get_logger
 from time import sleep
 
 from threading import Thread
