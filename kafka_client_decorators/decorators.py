@@ -1,10 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from .client import Client
+from .client import Client, ConsumerBuilder, ProducerBuilder
 from .kafka import ConnectionBuilder
-from .client import ConsumerBuilder
-from .client import ProducerBuilder
 from .util import get_logger
 
 

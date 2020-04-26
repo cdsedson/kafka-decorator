@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from pykafka import KafkaClient
+
 from .consumer_factory import ConsumerFactory
 from .producer_factory import ProducerFactory
 

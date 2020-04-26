@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from ..util import get_logger
+from threading import Thread
 from time import sleep
 
-from threading import Thread
+from ..util import get_logger
 
 
 class Client(Thread):
