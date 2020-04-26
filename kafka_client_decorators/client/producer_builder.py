@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from . import Producer
+from .producer import Producer
 
 
 class ProducerBuilder:

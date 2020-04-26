@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-from . import ConsumerJob
+from .consumer_job import ConsumerJob
 
 
 class ConsumerBuilder:
