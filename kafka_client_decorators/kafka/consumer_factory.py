@@ -3,9 +3,10 @@
 
 """Define ConsumerFactory class."""
 
+
 class ConsumerFactory:
     """A class capable of create a consumer connection."""
-    
+
     def __init__(self, connection, topic, balanced, args, kargs):
         """Create a ConsumerFactory.
 

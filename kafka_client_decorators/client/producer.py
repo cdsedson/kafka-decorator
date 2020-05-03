@@ -8,7 +8,7 @@ from ..util import get_logger
 
 class Producer:
     """Send message to topic.
-    
+
     Send messages to a topic and manage the producer connection
     """
 
@@ -51,12 +51,12 @@ class Producer:
                 self.__producer__ = self.__conn__.create()
             self.__producer__.produce(*func_args, **func_kargs)
             self.logger.debug(f"Mesage sent for {self.__conn__}")
-        except Exception as e:
-            self.logger.exception(f"Exception raised: {e}")
+        except Exception as exc:
+            self.logger.exception(f"Exception raised: {exc}")
             if self.__producer__ is not None:
                 self.__producer__.stop()
                 self.__producer__ = None
-            raise e
+            raise exc
 
     def stop(self):
         """Stop the producer."""
@@ -64,8 +64,8 @@ class Producer:
         if self.__producer__ is not None:
             try:
                 self.__producer__.stop()
-            except Exception as e:
+            except Exception as exc:
                 self.logger.exception("Exception on stop listen "
-                                      f"{self.__conn__} : {type(e)} {e}")
+                                      f"{self.__conn__} : {type(exc)} {exc}")
             self.__producer__ = None
         self.logger.debug(f"producer Stoped: {self.__conn__}")

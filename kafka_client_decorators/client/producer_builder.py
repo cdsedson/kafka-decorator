@@ -43,7 +43,7 @@ class ProducerBuilder:
                 A new Producer object configured with
                 the parameters given to __init__
         """
-        conn = parent.getConnection()
+        conn = parent.get_connection()
         prod = conn.get_producer(self.__topic__,
                                  self.__args__, self.__kargs__)
         return Producer(prod)

@@ -20,7 +20,7 @@ class ConsumerJob(Thread):
         Parameters
         ----------
             parent: object
-                A object from the function will be called                
+                A object from the function will be called
             function: f(message: msg) -> any
                 A function from the object parent that receive a message
                 as parameter
@@ -34,6 +34,7 @@ class ConsumerJob(Thread):
         self.__parent__ = parent
         self.__function__ = function
         self.__conn__ = connection
+        self.__started__ = False
         Thread.__init__(self)
 
     def __receive__(self):
@@ -59,7 +60,7 @@ class ConsumerJob(Thread):
 
     def __listen__(self):
         """Listen messages.
-        
+
         While the consumer is acive call the method self.__receive__
         how many times id needed
         """
@@ -74,9 +75,9 @@ class ConsumerJob(Thread):
         self.__started__ = True
         try:
             self.__listen__()
-        except Exception as e:
+        except Exception as exc:
             self.logger.exception("Exception from "
-                                  f"{self.__conn__} : {type(e)} {e}")
+                                  f"{self.__conn__} : {type(exc)} {exc}")
 
     def stop(self):
         """Stop the conumer thread."""
@@ -87,6 +88,6 @@ class ConsumerJob(Thread):
                 if self.__consumer__ is not None:
                     self.__consumer__.stop()
                 self.logger.debug(f"Stoped consumer, {self.__conn__}")
-            except Exception as e:
+            except Exception as exc:
                 self.logger.exception("Exception on stop listen "
-                                      f"{self.__conn__} : {type(e)} {e}")
+                                      f"{self.__conn__} : {type(exc)} {exc}")

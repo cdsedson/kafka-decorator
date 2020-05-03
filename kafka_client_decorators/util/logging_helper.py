@@ -23,12 +23,12 @@ def set_debug_level(level):
 
 def get_logger(name):
     """Create and return a logger.
-    
+
     Parameters
     ----------
         name: str
            Logger name
-    
+
     Returns
     -------
         logging.Logger

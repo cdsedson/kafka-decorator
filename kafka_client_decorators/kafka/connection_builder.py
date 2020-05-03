@@ -43,7 +43,7 @@ class ConnectionBuilder:
         -------
             pykafka.topic.Topic
                 pykafka representation of a topic
-                
+
         """
         kafka_client = KafkaClient(*self.__args__, **self.__kargs__)
         return kafka_client.topics[topic]
@@ -59,10 +59,10 @@ class ConnectionBuilder:
                 True for a balanced consumer
                 False to a simple consumer
             args: *args
-                A list of arguments passed to __init__ method 
+                A list of arguments passed to __init__ method
                 of ConsumerFactory
             kargs: **kargs
-                {key:value} format list to __init__ method 
+                {key:value} format list to __init__ method
                 of ConsumerFactory
 
         Returns

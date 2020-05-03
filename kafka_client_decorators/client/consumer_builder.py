@@ -23,7 +23,7 @@ class ConsumerBuilder:
                 List of arguments to be passed to consumer
             kargs: **kargs
                 {key:value} format list to be passed to consumer
-            function: f(message: msg) -> any 
+            function: f(message: msg) -> any
                 a function to be called by consumer
 
         """
@@ -35,12 +35,12 @@ class ConsumerBuilder:
 
     def create(self, parent):
         """Create a ConumerJob object.
-        
+
         Parameters
         ----------
         parent: Client
             An object which function will be called from
-            Used to get the connection parameters 
+            Used to get the connection parameters
 
         Returns
         -------
@@ -48,7 +48,7 @@ class ConsumerBuilder:
                 A new ConsumerJob object configured with
                 the parameters given to __ini__
         """
-        conn = parent.getConnection()
+        conn = parent.get_connection()
         prod = conn.get_consumer(self.__topic__, self.__balanced__,
                                  self.__args__, self.__kargs__)
         return ConsumerJob(parent, self.__function__, prod)

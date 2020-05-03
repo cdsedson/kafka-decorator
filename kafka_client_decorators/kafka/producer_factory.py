@@ -3,6 +3,7 @@
 
 """Define ProducerFactory class."""
 
+
 class ProducerFactory:
     """A class capable of create a producer connection."""
 

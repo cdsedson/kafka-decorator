@@ -10,7 +10,7 @@ from .util import get_logger
 
 class KafkaDecorator:
     """Wrap pykafka functions.
-    
+
     Define the decorators and hold the comunication data
     """
 
@@ -70,12 +70,12 @@ class KafkaDecorator:
             topic: str
                 The name of the topic that will be read
             args: *args
-                A list of arguments used by 
+                A list of arguments used by
                 pykafka.topic.Topic.get_balanced_consumer function
             kargs: **kargs
                 {key:value} format list used by
                 pykafka.topic.Topic.get_balanced_consumer function
-        
+
         Returns
         -------
             function
@@ -83,10 +83,10 @@ class KafkaDecorator:
         """
         self.logger.info(f"Adding balanced consumer, topic: {topic}")
 
-        def kafka_client_consumer_inner(f):
-            c_conf = ConsumerBuilder(topic, True, args, kargs, f)
+        def kafka_client_consumer_inner(function):
+            c_conf = ConsumerBuilder(topic, True, args, kargs, function)
             self.__topics_receive__.append(c_conf)
-            return f
+            return function
         return kafka_client_consumer_inner
 
     def simple_consumer(self, topic, *args, **kargs):
@@ -113,10 +113,10 @@ class KafkaDecorator:
         """
         self.logger.info(f"Adding simple consumer, topic: {topic}")
 
-        def kafka_client_consumer_inner(f):
-            c_conf = ConsumerBuilder(topic, False, args, kargs, f)
+        def kafka_client_consumer_inner(function):
+            c_conf = ConsumerBuilder(topic, False, args, kargs, function)
             self.__topics_receive__.append(c_conf)
-            return f
+            return function
         return kafka_client_consumer_inner
 
     def producer(self, topic, *args, **kargs):
@@ -142,16 +142,16 @@ class KafkaDecorator:
         -------
             function
                 A new function that send messages
-                that function have the same parameters of 
+                that function have the same parameters of
                 pykafka.producer.Producer.produce function
         """
         self.logger.info(f"Adding producer, topic: {topic}")
 
-        def inner_producer(f):
-            p_conf = ProducerBuilder(f.__name__, topic, args, kargs)
+        def inner_producer(function):
+            p_conf = ProducerBuilder(function.__name__, topic, args, kargs)
             self.__topics_send__.append(p_conf)
 
             def inner(obj, *func_args, **func_kargs):
-                return self.cls.producer(f.__name__, *func_args, **func_kargs)
+                return obj.producer(function.__name__, *func_args, **func_kargs)
             return inner
         return inner_producer
