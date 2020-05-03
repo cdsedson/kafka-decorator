@@ -5,7 +5,7 @@
 
 import logging
 
-KAFKA_DECORATOR_DEBUG = None
+__KAFKA_DECORATOR_DEBUG__ = None
 
 
 def set_debug_level(level):
@@ -17,8 +17,8 @@ def set_debug_level(level):
     ----------
         level: log level define in logging module
     """
-    global KAFKA_DECORATOR_DEBUG
-    KAFKA_DECORATOR_DEBUG = level
+    global __KAFKA_DECORATOR_DEBUG__
+    __KAFKA_DECORATOR_DEBUG__ = level
 
 
 def get_logger(name):
@@ -34,8 +34,7 @@ def get_logger(name):
         logging.Logger
             A standard python logger
     """
-    global KAFKA_DECORATOR_DEBUG
     logger = logging.getLogger(name)
-    if KAFKA_DECORATOR_DEBUG is not None:
-        logger.setLevel(KAFKA_DECORATOR_DEBUG)
+    if __KAFKA_DECORATOR_DEBUG__ is not None:
+        logger.setLevel(__KAFKA_DECORATOR_DEBUG__)
     return logger
