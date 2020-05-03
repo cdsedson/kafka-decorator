@@ -21,10 +21,10 @@ class ConnectionBuilder:
 
         Parameters
         ----------
-            args: *args
+            *args
                 A list of arguments used by pykafka.client.KafkaClient
                 initialization
-            kargs: **kargs
+            **kargs
                 {key:value} format list used by pykafka.client.KafkaClient
                 initialization
         """
@@ -58,10 +58,10 @@ class ConnectionBuilder:
             balanced: bool
                 True for a balanced consumer
                 False to a simple consumer
-            args: *args
+            *args
                 A list of arguments passed to __init__ method
                 of ConsumerFactory
-            kargs: **kargs
+            **kargs
                 {key:value} format list to __init__ method
                 of ConsumerFactory
 
@@ -79,10 +79,10 @@ class ConnectionBuilder:
         ----------
             topic: str
                 Name of the topic
-            args: *args
+            *args
                 A list of arguments passed to __init__ method
                 of ProducerFactory
-            kargs: **kargs
+            **kargs
                 {key:value} format list to __init__ method
                 of ProducerFactory
 

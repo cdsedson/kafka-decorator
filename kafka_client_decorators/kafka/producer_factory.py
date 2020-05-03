@@ -16,9 +16,9 @@ class ProducerFactory:
                 A object that holds the connection information
             topic: str
                 Name of topic that messages will be read from
-            args:*args
+            *args
                 A list of arguments used by the create producer function
-            kargs:**kargs
+            **kargs
                 {key:value} format list used by the create producer function
         """
         self.__args__ = args

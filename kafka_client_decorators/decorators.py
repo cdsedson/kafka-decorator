@@ -32,10 +32,10 @@ class KafkaDecorator:
 
         Parameters
         ----------
-           args: *args
+           *args
                 A list of arguments used by pykafka.client.KafkaClient
                 initialization
-            kargs: **kargs
+           **kargs
                 {key:value} format list used by pykafka.client.KafkaClient
                 initialization
 
@@ -69,10 +69,10 @@ class KafkaDecorator:
         ----------
             topic: str
                 The name of the topic that will be read
-            args: *args
+            *args
                 A list of arguments used by
                 pykafka.topic.Topic.get_balanced_consumer function
-            kargs: **kargs
+            **kargs
                 {key:value} format list used by
                 pykafka.topic.Topic.get_balanced_consumer function
 
@@ -99,10 +99,10 @@ class KafkaDecorator:
         ----------
             topic: str
                 The name of the topic that will be read
-            args: *args
+            *args
                 A list of arguments used by
                 pykafka.topic.Topic.get_simple_consumer function
-            kargs: **kargs
+            **kargs
                 {key:value} format list used by
                 pykafka.topic.Topic.get_simple_consumer function
 
@@ -131,10 +131,10 @@ class KafkaDecorator:
         ----------
             topic: str
                 The name of the topic that will be written
-            args: *args
+            *args
                 A list of arguments used by
                 pykafka.topic.Topic.get_producer function
-            kargs: **kargs
+            **kargs
                 {key:value} format list used by
                 pykafka.topic.Topic.get_producer function
 

@@ -165,9 +165,9 @@ class Client(Thread):
             name: str
                 Name of a function called. It is used just to find
                 the right producer to send the message
-            func_args: *args
+            *func_args
                 List of arguments to be passed to producer's method produce
-            func_kargs: **kargs
+            **func_kargs
                 {key:value} format list to be passed to producer's
                 method produce
 

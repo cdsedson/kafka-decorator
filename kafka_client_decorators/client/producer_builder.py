@@ -19,9 +19,9 @@ class ProducerBuilder:
                 to map a function called and the right topic destination
             topic: str
                 The name of topic wich the producer will connect
-            args: *args
+            *args
                 List of arguments to be passed to producer
-            kargs: **kargs
+            **kargs
                 {key:value} format list to be passed to producer
         """
         self.name = name

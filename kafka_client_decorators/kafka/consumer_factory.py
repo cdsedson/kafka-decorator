@@ -21,9 +21,9 @@ class ConsumerFactory:
             balanced: bool
                 True for a balanced consumer
                 False for a simple consumer
-            args: *args
+            *args
                 A list of arguments used by the create consumer function
-            kargs: **kargs
+            **kargs
                 {key:value} format list used by the create consumer function
         """
         self.__args__ = args

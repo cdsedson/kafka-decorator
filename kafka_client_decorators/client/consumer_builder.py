@@ -19,9 +19,9 @@ class ConsumerBuilder:
             balanced: bool
                 True to create a balanced consumer
                 or False to a simple consumer
-            args: *args
+            *args
                 List of arguments to be passed to consumer
-            kargs: **kargs
+            **kargs
                 {key:value} format list to be passed to consumer
             function: f(message: msg) -> any
                 a function to be called by consumer

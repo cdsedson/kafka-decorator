@@ -33,10 +33,10 @@ class Producer:
 
         Parameters
         ----------
-            func_args: *args
+            *func_args
                 A list of arguments used by the method produce
                 of prodecer connection
-            func_kargs: **kargs
+            **func_kargs
                 {key:value} format list used by the method produce
                 of prodecer connection
         Raises
