@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+"""Define Client class."""
+
 from threading import Thread
 from time import sleep
 
@@ -8,10 +10,26 @@ from ..util import get_logger
 
 
 class Client(Thread):
-    SIMPLE = 1
-    BALANCED = 2
+    """Manage all connections.
+    
+    Keep and manage all consumers and producers. Making sure
+    they are health and running until the application stop 
+    """
 
-    def __init__(self, connection_args, list_topics_receive, list_topics_send):
+    def __init__(self, connection, list_topics_receive, list_topics_send):
+        """Create a Client object.
+
+        Parameters
+        ----------
+            connection: ConnectionBuilder
+                A object that holds the connection parameters
+            list_topics_receive: [ConsumerBuilder]
+                A list of consumer configurations, with all information
+                needed to create the consumers
+            list_topics_send: [ProducerBuilder]
+                A list of producer configurations, with all information
+                needed to create the producers
+        """
         self.logger = get_logger(__name__)
         self.logger.info("Creating cliet, listen topics: "
                          f"{[str(t) for t in list_topics_receive]} "
@@ -20,15 +38,30 @@ class Client(Thread):
         self.__started__ = True
         self.__conumers_failed__ = False
         self.__list_topics_receive__ = list_topics_receive
-        self.__connection_args__ = connection_args
+        self.__connection_args__ = connection
         self.__list_topics_send__ = {
             p.name: (p, None) for p in list_topics_send}
         Thread.__init__(self)
 
     def getConnection(self):
+        """Return the connection data.
+        
+        Returns
+        -------
+            ConnectionBuilder
+                An object capable of creating a connection
+        """
         return self.__connection_args__
 
     def __createConsumers__(self):
+        """Create the consumers.
+        
+        Returns
+        -------
+            [ConsumerJob]
+                A consumerJob list, all ready to use but not
+                started yet
+        """
         self.logger.info("Creating consumers")
         consumers = []
 
@@ -39,17 +72,31 @@ class Client(Thread):
         return consumers
 
     def __startConsumers__(self, consumers):
+        """Start all consumers."""
         self.logger.info("Staring consumers")
         for c in consumers:
             c.start()
 
     def __stopConsumer__(self, consumers):
+        """Stop all cnsumers."""
         self.logger.info("Stopping consumers")
         for st in consumers:
             if st is not None:
                 st.stop()
 
     def __waitConsumer__(self, consumers):
+        """Verify if consumers are running.
+        
+        Verify if the consumers are running
+        Stop all consumers the consumers if detect that
+        one or more consumers failed or stop was called
+
+        Returns
+        -------
+            bool
+                True if consumers are running
+                False if consumers are stopped
+        """
         if self.__started__ is False:
             self.__stopConsumer__(consumers)
 
@@ -68,6 +115,7 @@ class Client(Thread):
         return init
 
     def __waitConsumersFinish__(self, consumers):
+        """Wait for all consumers finished."""
         self.logger.info("Waiting consumers finished")
         init = True
         while init is True:
@@ -75,6 +123,11 @@ class Client(Thread):
         self.logger.info("All consumers finished")
 
     def __waitProducersFinish__(self):
+        """Wait for producers finished.
+        
+        Wait for util stop was called or the consumers failed
+        After that ask to producers stop and wait for they finish
+        """
         self.logger.info("Waiting Producers finished")
         while (not self.__conumers_failed__) and self.__started__:
             sleep(0.01)
@@ -84,6 +137,12 @@ class Client(Thread):
         self.logger.info("All producers finished")
 
     def run(self):
+        """Client main thread.
+        
+        Start consumers and producers and then wait they finished
+        After that if stop was not called restart all consumers and producers
+        if stop was called finish the thread
+        """
         self.logger.info("Start App")
         self.__started__ = True
 
@@ -96,6 +155,27 @@ class Client(Thread):
         self.logger.info("App finished")
 
     def producer(self, name, *func_args, **func_kargs):
+        """Send a message to a topic.
+       
+        Before send a message verify if the consumer is stopped
+        if is stopped starts it
+
+        Parameters
+        ----------
+            name: str
+                Name of a function called. It is used just to find
+                the right producer to send the message
+            func_args: *args
+                List of arguments to be passed to producer's method produce
+            func_kargs: **kargs
+                {key:value} format list to be passed to producer's method produce
+
+        Returns
+        -------
+            bool
+                True if the message have been successful sent
+                otherwise returns False
+        """
         self.logger.debug(f"Send message, function: { name }")
         pbuilder, p = self.__list_topics_send__[name]
         self.logger.debug(f"Send message to topic: {pbuilder}")
@@ -113,11 +193,20 @@ class Client(Thread):
         return success
 
     def stop(self):
+        """Ask to Client stop."""
         self.__started__ = False
 
     def wait(self):
+        """Wait the Client stop."""
         while self.is_alive() is True:
             self.join(0.01)
 
     def is_fineshed(self):
+        """Verify if the Client stop.
+        
+        Returns
+        -------
+            bool
+                True if Client finished otherwise False
+        """
         return self.is_alive() is not True

@@ -1,24 +1,50 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+"""Define a ConsumerJob class."""
+
 from threading import Thread
 
 from ..util import get_logger
 
 
 class ConsumerJob(Thread):
+    """Receive message from a topic.
 
-    def __init__(self, parent, function, conn):
+    Receive messages to a topic and manage the consumer connection
+    """
+
+    def __init__(self, parent, function, connection):
+        """Create a ConsumerJob class.
+
+        Parameters
+        ----------
+            parent: object
+                A object from the function will be called                
+            function: f(message: msg) -> any
+                A function from the object parent that receive a message
+                as parameter
+            connection: ConsumerFactory
+                A object capable of create a consumer connection
+        """
         self.logger = get_logger(__name__)
-        self.logger.info(f"Creating Consumer for {conn}")
+        self.logger.info(f"Creating Consumer for {connection}")
 
         self.__consumer__ = None
         self.__parent__ = parent
         self.__function__ = function
-        self.__conn__ = conn
+        self.__conn__ = connection
         Thread.__init__(self)
 
-    def __receive__(self, function):
+    def __receive__(self):
+        """Receive a message.
+
+        Read a message from the consumer connection and call a
+        function of the object parent passing the message as
+        parameter
+        If nedeed create a consumer coonection
+        """
+        function = self.__function__
         self.logger.debug(f"Start receive, {self.__conn__}")
         for msg in self.__consumer__:
             if msg is not None:
@@ -32,14 +58,19 @@ class ConsumerJob(Thread):
         self.logger.debug(f"Stop receive, topic: {self.__conn__}")
 
     def __listen__(self):
+        """Listen messages.
+        
+        While the consumer is acive call the method self.__receive__
+        how many times id needed
+        """
         self.logger.info(f"Start listen, {self.__conn__}")
         self.__consumer__ = self.__conn__.create()
-        f = self.__function__
         while self.__started__ is True:
-            self.__receive__(f)
+            self.__receive__()
         self.logger.info(f"Stop listen, {self.__conn__}")
 
     def run(self):
+        """Start of the ConsumerJob thread."""
         self.__started__ = True
         try:
             self.__listen__()
@@ -48,6 +79,7 @@ class ConsumerJob(Thread):
                                   f"{self.__conn__} : {type(e)} {e}")
 
     def stop(self):
+        """Stop the conumer thread."""
         self.logger.info(f"Stopping consumer, topic: {self.__conn__}")
         if self.__started__ is True:
             self.__started__ = False
