@@ -16,8 +16,8 @@ class KafkaDecorator:
 
     def __init__(self):
         """Create a KafkaDecorator."""
-        self.logger = get_logger(__name__)
-        self.logger.info("Creating decorator ")
+        self.__logger = get_logger(__name__)
+        self.__logger.info("Creating decorator ")
 
         self.__topics_receive__ = []
         self.__topics_send__ = []
@@ -44,19 +44,20 @@ class KafkaDecorator:
             class
                 A new class that inherits from the Client class
         """
-        self.logger.info("Adding host")
+        self.__logger.info("Adding host")
 
+        parent = self
         def inner(cls):
+            parent.__logger.info(f"Creating class: {cls}")
             class NewCls(Client, cls):
-                def __init__(obj, *iargs, **ikargs):
-                    self.logger.info(f"Creating class: {cls}")
-                    Client.__init__(obj, self.__connection__,
-                                    self.__topics_receive__,
-                                    self.__topics_send__)
-                    cls.__init__(obj, *iargs, **ikargs)
-                    self.cls = obj
+                def __init__(self, *iargs, **ikargs):
+                    Client.__init__(self, parent.__connection__,
+                                    parent.__topics_receive__,
+                                    parent.__topics_send__)
+                    cls.__init__(self, *iargs, **ikargs)
+                    parent.cls = self
             return NewCls
-        self.__connection__ = ConnectionBuilder(args, kargs)
+        parent.__connection__ = ConnectionBuilder(args, kargs)
         return inner
 
     def balanced_consumer(self, topic, *args, **kargs):
@@ -81,7 +82,7 @@ class KafkaDecorator:
             function
                 The same decorated function
         """
-        self.logger.info(f"Adding balanced consumer, topic: {topic}")
+        self.__logger.info(f"Adding balanced consumer, topic: {topic}")
 
         def kafka_client_consumer_inner(function):
             c_conf = ConsumerBuilder(topic, True, args, kargs, function)
@@ -111,7 +112,7 @@ class KafkaDecorator:
             function
                 The same decorated function
         """
-        self.logger.info(f"Adding simple consumer, topic: {topic}")
+        self.__logger.info(f"Adding simple consumer, topic: {topic}")
 
         def kafka_client_consumer_inner(function):
             c_conf = ConsumerBuilder(topic, False, args, kargs, function)
@@ -145,13 +146,14 @@ class KafkaDecorator:
                 that function have the same parameters of
                 pykafka.producer.Producer.produce function
         """
-        self.logger.info(f"Adding producer, topic: {topic}")
+        self.__logger.info(f"Adding producer, topic: {topic}")
 
         def inner_producer(function):
             p_conf = ProducerBuilder(function.__name__, topic, args, kargs)
             self.__topics_send__.append(p_conf)
 
             def inner(obj, *func_args, **func_kargs):
-                return obj.producer(function.__name__, *func_args, **func_kargs)
+                return obj.producer(function.__name__, *
+                                    func_args, **func_kargs)
             return inner
         return inner_producer

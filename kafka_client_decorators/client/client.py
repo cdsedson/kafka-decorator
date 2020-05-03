@@ -30,10 +30,10 @@ class Client(Thread):
                 A list of producer configurations, with all information
                 needed to create the producers
         """
-        self.logger = get_logger(__name__)
-        self.logger.info("Creating cliet, listen topics: "
-                         f"{[str(t) for t in list_topics_receive]} "
-                         f"send topics: {[str(t) for t in list_topics_send]}")
+        self.__logger = get_logger(__name__)
+        self.__logger.info("Creating cliet, listen topics: "
+                           f"{[str(t) for t in list_topics_receive]} "
+                           f"send {[str(t) for t in list_topics_send]}")
 
         self.__started__ = True
         self.__conumers_failed__ = False
@@ -62,7 +62,7 @@ class Client(Thread):
                 A consumerJob list, all ready to use but not
                 started yet
         """
-        self.logger.info("Creating consumers")
+        self.__logger.info("Creating consumers")
         consumers = []
 
         for builder in self.__list_topics_receive__:
@@ -73,13 +73,13 @@ class Client(Thread):
 
     def __start_consumers__(self, consumers):
         """Start all consumers."""
-        self.logger.info("Staring consumers")
+        self.__logger.info("Staring consumers")
         for consumer in consumers:
             consumer.start()
 
     def __stop_consumer__(self, consumers):
         """Stop all cnsumers."""
-        self.logger.info("Stopping consumers")
+        self.__logger.info("Stopping consumers")
         for consumer in consumers:
             if consumer is not None:
                 consumer.stop()
@@ -116,11 +116,11 @@ class Client(Thread):
 
     def __wait_consumers_finish__(self, consumers):
         """Wait for all consumers finished."""
-        self.logger.info("Waiting consumers finished")
+        self.__logger.info("Waiting consumers finished")
         init = True
         while init is True:
             init = self.__wait_consumer__(consumers)
-        self.logger.info("All consumers finished")
+        self.__logger.info("All consumers finished")
 
     def __wait_producers_finish__(self):
         """Wait for producers finished.
@@ -128,13 +128,13 @@ class Client(Thread):
         Wait for util stop was called or the consumers failed
         After that ask to producers stop and wait for they finish
         """
-        self.logger.info("Waiting Producers finished")
+        self.__logger.info("Waiting Producers finished")
         while (not self.__conumers_failed__) and self.__started__:
             sleep(0.01)
         for producer in self.__list_topics_send__.values():
             if producer[1] is not None:
                 producer[1].stop()
-        self.logger.info("All producers finished")
+        self.__logger.info("All producers finished")
 
     def run(self):
         """Client main thread.
@@ -143,7 +143,7 @@ class Client(Thread):
         After that if stop was not called restart all consumers and producers
         if stop was called finish the thread
         """
-        self.logger.info("Start App")
+        self.__logger.info("Start App")
         self.__started__ = True
 
         while self.__started__ is True:
@@ -152,7 +152,7 @@ class Client(Thread):
             self.__start_consumers__(consumers)
             self.__wait_consumers_finish__(consumers)
             self.__wait_producers_finish__()
-        self.logger.info("App finished")
+        self.__logger.info("App finished")
 
     def producer(self, name, *func_args, **func_kargs):
         """Send a message to a topic.
@@ -177,9 +177,9 @@ class Client(Thread):
                 True if the message have been successful sent
                 otherwise returns False
         """
-        self.logger.debug(f"Send message, function: { name }")
+        self.__logger.debug(f"Send message, function: { name }")
         pbuilder, producer = self.__list_topics_send__[name]
-        self.logger.debug(f"Send message to topic: {pbuilder}")
+        self.__logger.debug(f"Send message to topic: {pbuilder}")
         success = True
         try:
             if producer is None:
@@ -188,8 +188,8 @@ class Client(Thread):
 
             producer.produce(*func_args, **func_kargs)
         except (Exception) as exc:
-            self.logger.exception(f"Cant send: {pbuilder} "
-                                  f"error: {type(exc)} {exc}")
+            self.__logger.exception(f"Cant send: {pbuilder} "
+                                    f"error: {type(exc)} {exc}")
             success = False
         return success
 

@@ -27,8 +27,8 @@ class ConsumerJob(Thread):
             connection: ConsumerFactory
                 A object capable of create a consumer connection
         """
-        self.logger = get_logger(__name__)
-        self.logger.info(f"Creating Consumer for {connection}")
+        self.__logger = get_logger(__name__)
+        self.__logger.info(f"Creating Consumer for {connection}")
 
         self.__consumer__ = None
         self.__parent__ = parent
@@ -46,17 +46,17 @@ class ConsumerJob(Thread):
         If nedeed create a consumer coonection
         """
         function = self.__function__
-        self.logger.debug(f"Start receive, {self.__conn__}")
+        self.__logger.debug(f"Start receive, {self.__conn__}")
         for msg in self.__consumer__:
             if msg is not None:
                 function(self.__parent__, msg)
-                self.logger.debug("Message received from "
-                                  f"{self.__conn__}: "
-                                  f"offset: {msg.offset}")
+                self.__logger.debug("Message received from "
+                                    f"{self.__conn__}: "
+                                    f"offset: {msg.offset}")
             if self.__started__ is False:
-                self.logger.info(f"Asked to stop, {self.__conn__}")
+                self.__logger.info(f"Asked to stop, {self.__conn__}")
                 break
-        self.logger.debug(f"Stop receive, topic: {self.__conn__}")
+        self.__logger.debug(f"Stop receive, topic: {self.__conn__}")
 
     def __listen__(self):
         """Listen messages.
@@ -64,11 +64,11 @@ class ConsumerJob(Thread):
         While the consumer is acive call the method self.__receive__
         how many times id needed
         """
-        self.logger.info(f"Start listen, {self.__conn__}")
+        self.__logger.info(f"Start listen, {self.__conn__}")
         self.__consumer__ = self.__conn__.create()
         while self.__started__ is True:
             self.__receive__()
-        self.logger.info(f"Stop listen, {self.__conn__}")
+        self.__logger.info(f"Stop listen, {self.__conn__}")
 
     def run(self):
         """Start of the ConsumerJob thread."""
@@ -78,19 +78,19 @@ class ConsumerJob(Thread):
         except Exception as exc:
             excstr = f"Exception from {self.__conn__}: {type(exc)} {exc}"
             if self.__started__ is True:
-                self.logger.exception(excstr)
+                self.__logger.exception(excstr)
             else:
-                self.logger.warning(excstr)
+                self.__logger.debug(excstr)
 
     def stop(self):
         """Stop the conumer thread."""
-        self.logger.info(f"Stopping consumer, topic: {self.__conn__}")
+        self.__logger.info(f"Stopping consumer, topic: {self.__conn__}")
         if self.__started__ is True:
             self.__started__ = False
             try:
                 if self.__consumer__ is not None:
                     self.__consumer__.stop()
-                self.logger.debug(f"Stoped consumer, {self.__conn__}")
+                self.__logger.debug(f"Stoped consumer, {self.__conn__}")
             except Exception as exc:
-                self.logger.exception("Exception on stop listen "
-                                      f"{self.__conn__} : {type(exc)} {exc}")
+                self.__logger.exception("Exception on stop listen "
+                                        f"{self.__conn__} : {type(exc)} {exc}")
