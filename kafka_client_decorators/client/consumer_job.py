@@ -76,8 +76,11 @@ class ConsumerJob(Thread):
         try:
             self.__listen__()
         except Exception as exc:
-            self.logger.exception("Exception from "
-                                  f"{self.__conn__} : {type(exc)} {exc}")
+            excstr = f"Exception from {self.__conn__}: {type(exc)} {exc}"
+            if self.__started__ is True:
+                self.logger.exception(excstr)
+            else:
+                self.logger.warning(excstr)
 
     def stop(self):
         """Stop the conumer thread."""
